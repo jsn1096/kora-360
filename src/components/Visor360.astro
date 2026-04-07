@@ -1,0 +1,166 @@
+---
+// Visor360.astro
+const imagenSala = "/renders/360-sala.webp"; 
+const imagenCocina = "/renders/360-cocina.webp";
+const imagenGym = "/renders/360-gym.webp";
+const imagenJacuzzi = "/renders/jacuzzi-360.webp";
+---
+
+<div id="panorama" style="width: 100%; height: 100vh; position: relative; background-color: #2c2c2c;"></div>
+
+<style is:global>
+  /* 1. La clase principal de nuestra flecha personalizada */
+  .flecha-animada {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(0, 0, 0, 0.2); /* Un fondo muy sutil para que resalte en fondos blancos */
+      border-radius: 50%;
+      border: 3px solid white;
+      position: relative;
+      cursor: pointer;
+      pointer-events: auto; /* Asegura que se pueda hacer clic */
+  }
+  .pnlm-load-box {
+      display: none !important;
+  }
+
+  /* 2. El símbolo de la flecha (Cheurón ∧) */
+  .flecha-animada::after {
+      content: "∧";
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 32px;
+      font-weight: bold;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%); /* Lo centramos milimétricamente */
+  }
+
+  /* 3. El anillo exterior que pulsa (Animación) */
+  .flecha-animada::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      right: -12px;
+      bottom: -12px;
+      border: 3px solid white;
+      border-radius: 50%;
+      animation: latido 1.5s infinite ease-out;
+  }
+
+  /* Definición de la animación de latido */
+  @keyframes latido {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.2); opacity: 0; }
+  }
+
+  /* 4. Evitamos que Pannellum intente mostrar su propio texto flotante feo */
+  .pnlm-tooltip { display: none !important; }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<script define:vars={{ imagenCocina, imagenSala, imagenGym, imagenJacuzzi }}>
+  const iniciarVisor = () => {
+    if (document.getElementById('panorama') && typeof pannellum !== 'undefined') {
+      
+      pannellum.viewer('panorama', {
+        "default": {
+            "firstScene": "cocina",
+            "sceneFadeDuration": 1000,
+            "autoLoad": true
+        },
+        "scenes": {
+            "cocina": {
+                "type": "equirectangular",
+                "panorama": imagenCocina,
+                "hotSpots": [
+                    {
+                        "pitch": 0,  /* 0 = En todo el centro vertical */
+                        "yaw": 260,    /* 0 = En todo el centro horizontal */
+                        "type": "scene",
+                        "sceneId": "sala",
+                        "cssClass": "flecha-animada" /* Aquí llamamos a nuestro CSS limpio */
+                    },
+                    {
+                        "pitch": 0,  /* 0 = En todo el centro vertical */
+                        "yaw": -20,    /* 0 = En todo el centro horizontal */
+                        "type": "scene",
+                        "sceneId": "gym",
+                        "cssClass": "flecha-animada" /* Aquí llamamos a nuestro CSS limpio */
+                    }
+                ]
+            },
+            "sala": {
+                "type": "equirectangular",
+                "panorama": imagenSala,
+                "hotSpots": [
+                  {
+                    "pitch": 0,
+                    "yaw": 15,
+                    "type": "scene",
+                    "sceneId": "jacuzzi",
+                    "cssClass": "flecha-animada"
+                  },
+                  {
+                    "pitch": 0,
+                    "yaw": 110,
+                    "type": "scene",
+                    "sceneId": "cocina",
+                    "cssClass": "flecha-animada"
+                  }
+                ]
+              },
+            "gym": {
+                "type": "equirectangular",
+                "panorama": imagenGym,
+                "hotSpots": [
+                  {
+                    "pitch": 0,
+                    "yaw": -30,
+                    "type": "scene",
+                    "sceneId": "cocina",
+                    "cssClass": "flecha-animada"
+                  },
+                  {
+                    "pitch": 0,
+                    "yaw": 100,
+                    "type": "scene",
+                    "sceneId": "jacuzzi",
+                    "cssClass": "flecha-animada"
+                  }
+                ]
+              },
+            "jacuzzi": {
+                "type": "equirectangular",
+                "panorama": imagenJacuzzi,
+                "hotSpots": [
+                  {
+                    "pitch": 0,
+                    "yaw": -50,
+                    "type": "scene",
+                    "sceneId": "sala",
+                    "cssClass": "flecha-animada"
+                  },
+                  {
+                    "pitch": 0,
+                    "yaw": 230,
+                    "type": "scene",
+                    "sceneId": "gym",
+                    "cssClass": "flecha-animada"
+                  }
+                ]
+              }
+        }
+      });
+
+    } else {
+      setTimeout(iniciarVisor, 50);
+    }
+  };
+
+  iniciarVisor();
+</script>
