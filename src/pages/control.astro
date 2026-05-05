@@ -1,0 +1,185 @@
+---
+// src/pages/control.astro
+const secciones = [
+  {
+    id: "terraza",
+    label: "Terraza",
+    emoji: "☀️",
+    escenas: ["cocina", "sala", "gym", "jacuzzi"]
+  },
+  {
+    id: "suites",
+    label: "Suites",
+    emoji: "🛏️",
+    escenas: ["estudio411", "departamento610"]
+  },
+  {
+    id: "areas-sociales",
+    label: "Áreas Sociales",
+    emoji: "🏊️",
+    escenas: ["contentarea"]
+  },
+];
+---
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control — Panel</title>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <h1>🎮 Panel de Control</h1>
+    <div id="estado-conexion" class="dot desconectado"></div>
+  </header>
+
+  <div id="secciones">
+    {secciones.map(sec => (
+      <div class="seccion">
+        <h2>{sec.emoji} {sec.label}</h2>
+        <div class="escenas">
+          {sec.escenas.map(escena => (
+            <button class="btn-escena" data-escena={escena} data-seccion={sec.id}>
+              {escena}
+            </button>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div id="actual">
+    <p>Mostrando ahora:</p>
+    <strong id="escena-actual">—</strong>
+  </div>
+</div>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f0f0f;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  h1 { font-size: 22px; }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .dot.conectado    { background: #10B981; box-shadow: 0 0 8px #10B981; }
+  .dot.desconectado { background: #EF4444; }
+
+  #secciones {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .seccion h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 12px;
+  }
+
+  .escenas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btn-escena {
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    text-transform: capitalize;
+    transition: all 0.15s;
+  }
+
+  .btn-escena:hover  { background: rgba(255,255,255,0.15); }
+
+  .btn-escena.activo {
+    background: #6366F1;
+    border-color: #6366F1;
+    font-weight: 700;
+  }
+
+  #actual {
+    margin-top: 40px;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+  }
+
+  #actual p  { color: rgba(255,255,255,0.4); font-size: 12px; margin-bottom: 6px; }
+  #actual strong { font-size: 22px; text-transform: capitalize; }
+</style>
+
+<script>
+  import PartySocket from "partysocket";
+
+  const socket = new PartySocket({
+    host: "tu-proyecto.jsn1096.partykit.dev",
+    room: "sala-demo",
+  });
+
+  const dotEstado    = document.getElementById("estado-conexion") as HTMLElement;
+  const escenaActual = document.getElementById("escena-actual") as HTMLElement;
+
+  socket.addEventListener("open", () => {
+    dotEstado.className = "dot conectado";
+  });
+
+  socket.addEventListener("close", () => {
+    dotEstado.className = "dot desconectado";
+  });
+
+  socket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === "cambiar-escena") {
+      escenaActual.textContent = data.escena;
+
+      document.querySelectorAll(".btn-escena").forEach((btn) => {
+        const el = btn as HTMLElement;
+        el.classList.toggle("activo", el.dataset.escena === data.escena);
+      });
+    }
+  });
+
+  document.querySelectorAll(".btn-escena").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = btn as HTMLElement;
+      socket.send(JSON.stringify({
+        type: "cambiar-escena",
+        escena: el.dataset.escena,
+        seccion: el.dataset.seccion,
+      }));
+    });
+  });
+</script>
+
+</body>
+</html>

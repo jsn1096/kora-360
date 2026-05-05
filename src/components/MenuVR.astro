@@ -1,0 +1,119 @@
+---
+// src/components/MenuVR.astro
+const secciones = [
+  { id: "terraza",       label: "Terraza",       icono: "☀", color: "#F59E0B" },
+  { id: "suites",        label: "Suites",         icono: "🛏", color: "#6366F1" },
+  { id: "areas-sociales",label: "Áreas Sociales", icono: "🏊", color: "#10B981" },
+];
+---
+
+<script is:inline define:vars={{ secciones }}>
+  function crearMenuVR() {
+    const scene = document.querySelector('a-scene');
+    if (!scene) return;
+
+    // Contenedor del menú, fijo frente a la cámara
+    const menu = document.createElement('a-entity');
+    menu.setAttribute('id', 'menu-vr');
+    menu.setAttribute('position', '0 -0.8 -2.5'); // debajo y al frente
+    menu.setAttribute('rotation', '0 0 0');
+
+    // Botón de toggle (abre/cierra el menú)
+    const btnToggle = document.createElement('a-entity');
+    btnToggle.setAttribute('id', 'btn-toggle-menu');
+    btnToggle.setAttribute('position', '0 0 0');
+
+    const circuloToggle = document.createElement('a-circle');
+    circuloToggle.setAttribute('radius', '0.12');
+    circuloToggle.setAttribute('material', 'color: white; shader: flat; opacity: 0.9; side: double');
+    circuloToggle.setAttribute('class', 'clickable');
+
+    const iconoToggle = document.createElement('a-text');
+    iconoToggle.setAttribute('value', '☰');
+    iconoToggle.setAttribute('color', '#222');
+    iconoToggle.setAttribute('align', 'center');
+    iconoToggle.setAttribute('width', '0.8');
+    iconoToggle.setAttribute('position', '0 0 0.01');
+
+    btnToggle.appendChild(circuloToggle);
+    btnToggle.appendChild(iconoToggle);
+    menu.appendChild(btnToggle);
+
+    // Panel de opciones (oculto por defecto)
+    const panel = document.createElement('a-entity');
+    panel.setAttribute('id', 'panel-menu');
+    panel.setAttribute('visible', 'false');
+    panel.setAttribute('position', '0 0.35 0');
+
+    // Fondo semitransparente del panel
+    const fondo = document.createElement('a-plane');
+    const anchoPanel = secciones.length * 0.55 + 0.2;
+    fondo.setAttribute('width', anchoPanel);
+    fondo.setAttribute('height', '0.5');
+    fondo.setAttribute('material', 'color: #111; opacity: 0.75; shader: flat; transparent: true; side: double');
+    fondo.setAttribute('position', `${(secciones.length - 1) * 0.275} 0 -0.01`);
+    panel.appendChild(fondo);
+
+    // Crear un botón por sección
+    secciones.forEach((seccion, i) => {
+      const btn = document.createElement('a-entity');
+      btn.setAttribute('position', `${i * 0.55} 0 0`);
+
+      const circulo = document.createElement('a-circle');
+      circulo.setAttribute('radius', '0.18');
+      circulo.setAttribute('material', `color: ${seccion.color}; shader: flat; opacity: 0.95; side: double`);
+      circulo.setAttribute('class', 'clickable');
+      circulo.dataset.seccion = seccion.id;
+
+      const icono = document.createElement('a-text');
+      icono.setAttribute('value', seccion.icono);
+      icono.setAttribute('align', 'center');
+      icono.setAttribute('width', '0.8');
+      icono.setAttribute('position', '0 0.04 0.01');
+
+      const label = document.createElement('a-text');
+      label.setAttribute('value', seccion.label);
+      label.setAttribute('color', 'white');
+      label.setAttribute('align', 'center');
+      label.setAttribute('width', '0.7');
+      label.setAttribute('position', '0 -0.27 0');
+
+      // Click → navegar a la sección
+      circulo.addEventListener('click', () => {
+        window.location.href = `/${seccion.id}`;
+      });
+
+      btn.appendChild(circulo);
+      btn.appendChild(icono);
+      btn.appendChild(label);
+      panel.appendChild(btn);
+    });
+
+    menu.appendChild(panel);
+
+    // Toggle abre/cierra el panel
+    let menuAbierto = false;
+    circuloToggle.addEventListener('click', () => {
+      menuAbierto = !menuAbierto;
+      panel.setAttribute('visible', menuAbierto);
+      iconoToggle.setAttribute('value', menuAbierto ? '✕' : '☰');
+    });
+
+    scene.appendChild(menu);
+
+    // El menú sigue a la cámara
+    const camera = document.querySelector('#camera');
+    if (camera) {
+      menu.setAttribute('position', '0 -0.8 -2.5');
+      scene.addEventListener('tick', () => {
+        // Adjuntar el menú como hijo de la cámara para que siempre esté visible
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.querySelector('a-scene');
+    if (scene.hasLoaded) crearMenuVR();
+    else scene.addEventListener('loaded', crearMenuVR);
+  });
+</script>

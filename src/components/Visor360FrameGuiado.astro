@@ -1,0 +1,209 @@
+---
+const imagenes = {
+  cocina: "/renders/360-cocina.webp",
+  sala: "/renders/360-sala.webp",
+  gym: "/renders/360-gym.webp",
+  jacuzzi: "/renders/jacuzzi-360.webp",
+  estudio411: "/renders/360-estudio411.webp",
+  departamento610: "/renders/360-estudio610.webp",
+  contentarea: "/renders/360-contentarea.webp",
+};
+
+const secciones = [
+  { id: "terraza",         label: "Terraza",        emoji: "☀️",  href: "/terraza" },
+  { id: "suites",          label: "Suites",          emoji: "🛏️",  href: "/suites" },
+  { id: "areas-sociales",  label: "Áreas Sociales",  emoji: "🏊️", href: "/areas-sociales" },
+];
+---
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+<script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+<nav id="menu-nav">
+  <button id="btn-menu" aria-label="Abrir menú">
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+  </button>
+
+  <div id="menu-panel" class="cerrado">
+    <p class="menu-titulo">Explorar</p>
+    {secciones.map(s => (
+      <a href={s.href} class="menu-item" data-id={s.id}>
+        <span class="menu-emoji">{s.emoji}</span>
+        <span class="menu-label">{s.label}</span>
+      </a>
+    ))}
+  </div>
+</nav>
+
+<div class="contenedor-vr">
+  <a-scene embedded xr-mode-ui="enabled: true">
+    <a-assets>
+      {Object.entries(imagenes).map(([id, url]) => (
+        <img id={id} src={url} crossorigin="anonymous" />
+      ))}
+    </a-assets>
+
+    <a-entity id="camera" camera look-controls></a-entity>
+  </a-scene>
+</div>
+
+<style>
+  .contenedor-vr { width: 100%; height: 100vh; background: #000; }
+
+  #menu-nav {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  #btn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+
+  #menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transform-origin: top left;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  #menu-panel.cerrado {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
+
+  #menu-panel.abierto {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+  }
+
+  .menu-titulo {
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 8px;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+
+  .menu-item:hover  { background: rgba(255,255,255,0.1); }
+  .menu-item.activo { background: rgba(255,255,255,0.15); font-weight: 600; }
+
+  .menu-emoji { font-size: 18px; width: 24px; text-align: center; }
+  .menu-label { flex: 1; }
+</style>
+
+<script is:inline>
+  // Exponer cargarEscena globalmente para que el script de PartySocket la llame
+  window.cargarEscena = function(nombreEscena) {
+    const scene = document.querySelector('a-scene');
+    if (!scene) return;
+
+    const cieloViejo = document.querySelector('.cielo-dinamico');
+    if (cieloViejo) cieloViejo.parentNode.removeChild(cieloViejo);
+
+    const cieloNuevo = document.createElement('a-sky');
+    cieloNuevo.setAttribute('class', 'cielo-dinamico');
+    cieloNuevo.setAttribute('src', `#${nombreEscena}`);
+    cieloNuevo.setAttribute('rotation', '0 -90 0');
+    scene.appendChild(cieloNuevo);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Menú hamburguesa
+    const btnMenu = document.getElementById('btn-menu');
+    const panel   = document.getElementById('menu-panel');
+
+    btnMenu.addEventListener('click', () => {
+      const abierto = panel.classList.toggle('abierto');
+      panel.classList.toggle('cerrado', !abierto);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!btnMenu.contains(e.target) && !panel.contains(e.target)) {
+        panel.classList.remove('abierto');
+        panel.classList.add('cerrado');
+      }
+    });
+
+    const rutaActual = window.location.pathname.replace('/', '');
+    document.querySelectorAll('.menu-item').forEach(item => {
+      if (item.dataset.id === rutaActual || (rutaActual === '' && item.dataset.id === 'terraza')) {
+        item.classList.add('activo');
+      }
+    });
+
+    // Cargar escena inicial
+    const scene = document.querySelector('a-scene');
+    if (scene.hasLoaded) window.cargarEscena('cocina');
+    else scene.addEventListener('loaded', () => window.cargarEscena('cocina'));
+  });
+</script>
+
+<script>
+  import PartySocket from "partysocket";
+
+  const seccionActual = "terraza";
+
+  const socket = new PartySocket({
+    host: "tu-proyecto.jsn1096.partykit.dev", // ← tu URL real
+    room: "sala-demo",
+  });
+
+  socket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === "cambiar-escena") {
+      //Comento esto porque ahora el cambio de escena no recarga la página, sino que solo cambia el cielo. Si quieres que recargue la página al cambiar de sección, puedes descomentar este bloque y ajustar las URLs según tu estructura.
+      // if (data.seccion && data.seccion !== seccionActual) {
+      //   window.location.href = `/${data.seccion}?escena=${data.escena}`;
+      //   return;
+      // }
+      window.cargarEscena?.(data.escena);
+    }
+  });
+</script>

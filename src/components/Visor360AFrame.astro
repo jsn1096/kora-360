@@ -1,14 +1,39 @@
 ---
-// Definimos las rutas de los renders
 const imagenes = {
   cocina: "/renders/360-cocina.webp",
   sala: "/renders/360-sala.webp",
   gym: "/renders/360-gym.webp",
   jacuzzi: "/renders/jacuzzi-360.webp"
 };
----
 
+const secciones = [
+  { id: "terraza",        label: "Terraza",        emoji: "☀️",  href: "/terraza" },
+  { id: "suites",         label: "Suites",          emoji: "🛏️",  href: "/suites" },
+  { id: "areas-sociales", label: "Áreas Sociales",  emoji: "🏊️", href: "/areas-sociales" },
+];
+---
 <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+<script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+<!-- MENÚ HTML (fuera de a-scene, encima de todo) -->
+<nav id="menu-nav">
+  <button id="btn-menu" aria-label="Abrir menú">
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+  </button>
+
+  <div id="menu-panel" class="cerrado">
+    <p class="menu-titulo">Explorar</p>
+    {secciones.map(s => (
+      <a href={s.href} class="menu-item" data-id={s.id}>
+        <span class="menu-emoji">{s.emoji}</span>
+        <span class="menu-label">{s.label}</span>
+      </a>
+    ))}
+  </div>
+</nav>
 
 <div class="contenedor-vr">
   <a-scene embedded xr-mode-ui="enabled: true">
@@ -18,16 +43,15 @@ const imagenes = {
       ))}
     </a-assets>
 
-    <a-sky id="sky-master" src="#cocina" rotation="0 -90 0"></a-sky>
-
-    <a-entity camera look-controls>
+    <a-entity id="camera" camera look-controls>
       <a-cursor
         id="cursor"
+        fuse="true"
+        fuse-timeout="1500"
+        raycaster="objects: .clickable; recursive: false"
         animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1"
         animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 1500; from: 1 1 1; to: 0.1 0.1 0.1"
-        event-set__mouseenter="_event: mouseenter; color: #00ff00"
-        event-set__mouseleave="_event: mouseleave; color: black"
-        raycaster="objects: .clickable">
+        material="color: cyan; shader: flat">
       </a-cursor>
     </a-entity>
 
@@ -36,16 +60,136 @@ const imagenes = {
 </div>
 
 <style>
-  .contenedor-vr {
-    width: 100%;
-    height: 100vh;
-    background: #000;
+  .contenedor-vr { width: 100%; height: 100vh; background: #000; }
+
+  /* ── Botón hamburguesa ── */
+  #menu-nav {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
   }
-  /* A-Frame maneja su propia interfaz, pero puedes añadir estilos aquí si necesitas */
+
+  #btn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+
+  /* ── Panel desplegable ── */
+  #menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transform-origin: top left;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  #menu-panel.cerrado {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
+
+  #menu-panel.abierto {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+  }
+
+  .menu-titulo {
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 8px;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+
+  .menu-item:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* Marcar la sección activa */
+  .menu-item.activo {
+    background: rgba(255,255,255,0.15);
+    font-weight: 600;
+  }
+
+  .menu-emoji {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .menu-label {
+    flex: 1;
+  }
 </style>
 
 <script is:inline>
-  // Configuración de las conexiones entre escenas (tu lógica original)
+
+    /* ── Toggle del menú ── */
+  const btnMenu  = document.getElementById('btn-menu');
+  const panel    = document.getElementById('menu-panel');
+
+  btnMenu.addEventListener('click', () => {
+    const abierto = panel.classList.toggle('abierto');
+    panel.classList.toggle('cerrado', !abierto);
+  });
+
+  // Cerrar al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (!btnMenu.contains(e.target) && !panel.contains(e.target)) {
+      panel.classList.remove('abierto');
+      panel.classList.add('cerrado');
+    }
+  });
+
+  // Marcar sección activa según la URL actual
+  const rutaActual = window.location.pathname.replace('/', '');
+  document.querySelectorAll('.menu-item').forEach(item => {
+    if (item.dataset.id === rutaActual || rutaActual === '' && item.dataset.id === 'terraza') {
+      item.classList.add('activo');
+    }
+  });
+  
   const escenas = {
     cocina: [
       { pos: {x: -4, y: 0, z: -2}, destino: "sala", label: "Ir a Sala" },
@@ -55,43 +199,90 @@ const imagenes = {
       { pos: {x: 2, y: 0, z: -4}, destino: "jacuzzi", label: "Ir al Jacuzzi" },
       { pos: {x: -3, y: 0, z: 2}, destino: "cocina", label: "Volver a Cocina" }
     ],
-    // Añadir el resto de conexiones aquí...
+    gym: [
+      { pos: {x: -4, y: 0, z: 1}, destino: "cocina", label: "Volver a Cocina" }
+    ],
+    jacuzzi: [
+      { pos: {x: 2, y: 0, z: 4}, destino: "sala", label: "Volver a Sala" }
+    ]
   };
 
-  const sky = document.querySelector('#sky-master');
-  const container = document.querySelector('#hotspots-container');
+  function crearHotspot(punto) {
+    const grupo = document.createElement('a-entity');
+    grupo.setAttribute('position', punto.pos);
+    grupo.setAttribute('look-at', '[camera]');
+
+    // --- Anillo exterior pulsante (más grande, desaparece) ---
+    const anillo1 = document.createElement('a-ring');
+    anillo1.setAttribute('radius-inner', '0.32');
+    anillo1.setAttribute('radius-outer', '0.38');
+    anillo1.setAttribute('material', 'color: white; shader: flat; transparent: true; opacity: 0.6; side: double');
+    anillo1.setAttribute('animation__scale', 'property: scale; from: 1 1 1; to: 1.6 1.6 1; dur: 1400; loop: true; easing: easeOutQuad');
+    anillo1.setAttribute('animation__op',    'property: material.opacity; from: 0.6; to: 0; dur: 1400; loop: true; easing: easeOutQuad');
+
+    // --- Anillo medio pulsante (desfasado) ---
+    const anillo2 = document.createElement('a-ring');
+    anillo2.setAttribute('radius-inner', '0.28');
+    anillo2.setAttribute('radius-outer', '0.33');
+    anillo2.setAttribute('material', 'color: white; shader: flat; transparent: true; opacity: 0.4; side: double');
+    anillo2.setAttribute('animation__scale', 'property: scale; from: 1 1 1; to: 1.4 1.4 1; dur: 1400; loop: true; easing: easeOutQuad; delay: 300');
+    anillo2.setAttribute('animation__op',    'property: material.opacity; from: 0.4; to: 0; dur: 1400; loop: true; easing: easeOutQuad; delay: 300');
+
+    // --- Círculo de fondo blanco sólido (el clickable) ---
+    const circulo = document.createElement('a-circle');
+    circulo.setAttribute('radius', '0.25');
+    circulo.setAttribute('material', 'color: white; shader: flat; side: double; opacity: 0.95');
+    circulo.setAttribute('class', 'clickable');
+
+    // --- Flecha SVG encima del círculo ---
+    const flecha = document.createElement('a-text');
+    flecha.setAttribute('value', '↑');
+    flecha.setAttribute('color', '#222222');
+    flecha.setAttribute('align', 'center');
+    flecha.setAttribute('width', '1.2');
+    flecha.setAttribute('position', '0 0 0.01');
+    // Animación de rebote vertical
+    flecha.setAttribute('animation', 'property: position; from: 0 -0.04 0.01; to: 0 0.04 0.01; dur: 800; loop: true; dir: alternate; easing: easeInOutSine');
+
+    // Evento click en el círculo
+    circulo.addEventListener('click', () => {
+      cargarEscena(punto.destino);
+    });
+
+    grupo.appendChild(anillo1);
+    grupo.appendChild(anillo2);
+    grupo.appendChild(circulo);
+    grupo.appendChild(flecha);
+
+    return grupo;
+  }
 
   function cargarEscena(nombreEscena) {
-    // 1. Cambiar la imagen del fondo
-    sky.setAttribute('src', `#${nombreEscena}`);
+    const scene = document.querySelector('a-scene');
+    const container = document.querySelector('#hotspots-container');
+    if (!scene || !container) return;
 
-    // 2. Limpiar hotspots anteriores
+    // Reemplazar cielo
+    const cieloViejo = document.querySelector('.cielo-dinamico');
+    if (cieloViejo) cieloViejo.parentNode.removeChild(cieloViejo);
+
+    const cieloNuevo = document.createElement('a-sky');
+    cieloNuevo.setAttribute('class', 'cielo-dinamico');
+    cieloNuevo.setAttribute('src', `#${nombreEscena}`);
+    cieloNuevo.setAttribute('rotation', '0 -90 0');
+    scene.appendChild(cieloNuevo);
+
+    // Recrear hotspots
     container.innerHTML = '';
-
-    // 3. Crear nuevos hotspots
     const puntos = escenas[nombreEscena] || [];
     puntos.forEach(punto => {
-      const el = document.createElement('a-entity');
-      
-      // Geometría del hotspot (puedes usar un plano con tu flecha o un círculo)
-      el.setAttribute('geometry', 'primitive: circle; radius: 0.3');
-      el.setAttribute('material', 'color: white; side: double; opacity: 0.8');
-      el.setAttribute('position', punto.pos);
-      el.setAttribute('class', 'clickable');
-      
-      // Orientación para que siempre mire a la cámara (billboard)
-      el.setAttribute('look-at', '[camera]');
-
-      // Evento de clic
-      el.addEventListener('click', () => {
-        console.log("Cambiando a:", punto.destino);
-        cargarEscena(punto.destino);
-      });
-
-      container.appendChild(el);
+      container.appendChild(crearHotspot(punto));
     });
   }
 
-  // Iniciar en la cocina
-  window.addEventListener('load', () => cargarEscena('cocina'));
+  document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.querySelector('a-scene');
+    if (scene.hasLoaded) cargarEscena('cocina');
+    else scene.addEventListener('loaded', () => cargarEscena('cocina'));
+  });
 </script>
