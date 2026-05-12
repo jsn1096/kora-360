@@ -1,3 +1,6 @@
+---
+const { title } = Astro.props;
+---
 <!doctype html>
 <html lang="en">
 	<head>
@@ -6,7 +9,7 @@
 		<link rel="icon" type="image/svg+xml" href="/renders/Kora Rojo@4x.png" />
 		<link rel="icon" href="/renders/Kora Rojo@4x.png" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Kora 360 Viewer</title>
+		<title>{title}</title>
 	</head>
 	<body>
 		<slot />

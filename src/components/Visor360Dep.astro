@@ -2,7 +2,8 @@
 const {estudio} = Astro.props;
 // Visor360.astro
 const imagenEstudio = `/renders/${estudio}-360.webp`; 
-// const imagenCocina = "/renders/360-cocina.webp";
+const imagenCuarto1 = "/renders/cuarto1-360.webp";
+const imagenCuarto2 = "/renders/cuarto2-360.webp";
 // const imagenGym = "/renders/360-gym.webp";
 // const imagenJacuzzi = "/renders/jacuzzi-360.webp";
 ---
@@ -52,13 +53,13 @@ const imagenEstudio = `/renders/${estudio}-360.webp`;
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
-<script define:vars={{ imagenEstudio, estudio }}>
+<script define:vars={{ imagenEstudio, estudio, imagenCuarto1, imagenCuarto2 }}>
   let visor = null;
 
   // Inyectar el menú con estilos 100% inline (no depende de clases externas)
   const crearMenu = () => {
     const escenas = [
-      { id: 'estudio411', label: `Estudio ${estudio}`, icono: '🏠' },
+      { id: 'estudio411', label: `Departamento ${estudio}`, icono: '🏠' },
     ];
 
     const wrapper = document.getElementById('panorama-wrapper');
@@ -160,18 +161,24 @@ const imagenEstudio = `/renders/${estudio}-360.webp`;
             "type": "equirectangular",
             "panorama": imagenEstudio,
             "hotSpots": [
-              // { "pitch": 0, "yaw": 260, "type": "scene", "sceneId": "sala",  "cssClass": "flecha-animada" },
-              // { "pitch": 0, "yaw": -20, "type": "scene", "sceneId": "gym",   "cssClass": "flecha-animada" }
+              { "pitch": 0, "yaw": 225, "type": "scene", "sceneId": "cuarto1",  "cssClass": "flecha-animada" },
+              { "pitch": 0, "yaw": -210, "type": "scene", "sceneId": "cuarto2",   "cssClass": "flecha-animada" }
             ]
           },
-          // "sala": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenSala,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": 15,  "type": "scene", "sceneId": "jacuzzi", "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 110, "type": "scene", "sceneId": "cocina",  "cssClass": "flecha-animada" }
-          //   ]
-          // },
+          "cuarto1": {
+            "type": "equirectangular",
+            "panorama": imagenCuarto1,
+            "hotSpots": [
+              { "pitch": 0, "yaw": 100,  "type": "scene", "sceneId": "estudio411", "cssClass": "flecha-animada" },
+            ]
+          },
+          "cuarto2": {
+            "type": "equirectangular",
+            "panorama": imagenCuarto2,
+            "hotSpots": [
+              { "pitch": 0, "yaw": 300,  "type": "scene", "sceneId": "estudio411", "cssClass": "flecha-animada" },
+            ]
+          },
           // "gym": {
           //   "type": "equirectangular",
           //   "panorama": imagenGym,
