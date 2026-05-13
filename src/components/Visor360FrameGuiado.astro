@@ -7,6 +7,9 @@ const imagenes = {
   estudio411: "/renders/360-estudio411.webp",
   departamento610: "/renders/360-estudio610.webp",
   contentarea: "/renders/360-contentarea.webp",
+  entrada: "/renders/test-5.png",
+  lobby: "/renders/360-lobby.webp",
+  coworking: "/renders/360-coworking.webp",
 };
 
 const secciones = [
@@ -39,14 +42,20 @@ const secciones = [
 </nav>
 
 <div class="contenedor-vr">
-  <a-scene embedded xr-mode-ui="enabled: true">
+  <a-scene embedded xr-mode-ui="enabled: true" renderer="
+    antialias: true;
+    colorManagement: true;
+    physicallyCorrectLights: true;
+    highRefreshRate: true;
+    precision: high;
+  ">
     <a-assets>
       {Object.entries(imagenes).map(([id, url]) => (
         <img id={id} src={url} crossorigin="anonymous" />
       ))}
     </a-assets>
 
-    <a-entity id="camera" camera look-controls></a-entity>
+    <a-entity id="camera" camera="fov: 70" look-controls></a-entity>
   </a-scene>
 </div>
 
@@ -140,19 +149,32 @@ const secciones = [
 
 <script is:inline>
   // Exponer cargarEscena globalmente para que el script de PartySocket la llame
-  window.cargarEscena = function(nombreEscena) {
-    const scene = document.querySelector('a-scene');
-    if (!scene) return;
+window.cargarEscena = function(nombreEscena) {
+  const scene = document.querySelector('a-scene');
+  if (!scene) return;
 
-    const cieloViejo = document.querySelector('.cielo-dinamico');
-    if (cieloViejo) cieloViejo.parentNode.removeChild(cieloViejo);
+  const cieloViejo = document.querySelector('.cielo-dinamico');
+  if (cieloViejo) cieloViejo.parentNode.removeChild(cieloViejo);
 
-    const cieloNuevo = document.createElement('a-sky');
-    cieloNuevo.setAttribute('class', 'cielo-dinamico');
-    cieloNuevo.setAttribute('src', `#${nombreEscena}`);
-    cieloNuevo.setAttribute('rotation', '0 -90 0');
-    scene.appendChild(cieloNuevo);
-  }
+  const cieloNuevo = document.createElement('a-sky');
+
+  cieloNuevo.setAttribute('class', 'cielo-dinamico');
+  cieloNuevo.setAttribute('src', `#${nombreEscena}`);
+  cieloNuevo.setAttribute('rotation', '0 -90 0');
+  cieloNuevo.setAttribute('material', 'shader: flat');
+
+  scene.appendChild(cieloNuevo);
+
+  cieloNuevo.addEventListener('loaded', () => {
+    const texture = cieloNuevo.getObject3D('mesh').material.map;
+
+    const renderer = scene.renderer;
+    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    texture.anisotropy = maxAnisotropy;
+    texture.needsUpdate = true;
+  });
+}
 
   document.addEventListener('DOMContentLoaded', () => {
     // Menú hamburguesa
@@ -173,15 +195,18 @@ const secciones = [
 
     const rutaActual = window.location.pathname.replace('/', '');
     document.querySelectorAll('.menu-item').forEach(item => {
-      if (item.dataset.id === rutaActual || (rutaActual === '' && item.dataset.id === 'terraza')) {
+      if (item.dataset.id === rutaActual || (rutaActual === '' && item.dataset.id === 'areas-sociales')) {
         item.classList.add('activo');
       }
     });
 
     // Cargar escena inicial
     const scene = document.querySelector('a-scene');
-    if (scene.hasLoaded) window.cargarEscena('cocina');
-    else scene.addEventListener('loaded', () => window.cargarEscena('cocina'));
+    if (scene.hasLoaded) window.cargarEscena('entrada');
+    else scene.addEventListener('loaded', () => {
+      AFRAME.scenes[0].renderer.setPixelRatio(window.devicePixelRatio);
+      window.cargarEscena('entrada')
+    });
   });
 </script>
 

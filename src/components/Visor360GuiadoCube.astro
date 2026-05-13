@@ -1,0 +1,304 @@
+---
+const cubemaps = {
+  entrada: {
+    right: "/cubemaps/entrada/right.webp",
+    left: "/cubemaps/entrada/left.webp",
+    top: "/cubemaps/entrada/top.webp",
+    bottom: "/cubemaps/entrada/bottom.webp",
+    front: "/cubemaps/entrada/front.webp",
+    back: "/cubemaps/entrada/back.webp",
+  },
+  gym: {
+    right: "/cubemaps/gym/px.png",
+    left: "/cubemaps/gym/nx.png",
+    top: "/cubemaps/gym/py.png",
+    bottom: "/cubemaps/gym/ny.png",
+    front: "/cubemaps/gym/pz.png",
+    back: "/cubemaps/gym/nz.png",
+  },
+
+  cocina: {
+    right: "/cubemaps/cocina/right.webp",
+    left: "/cubemaps/cocina/left.webp",
+    top: "/cubemaps/cocina/top.webp",
+    bottom: "/cubemaps/cocina/bottom.webp",
+    front: "/cubemaps/cocina/front.webp",
+    back: "/cubemaps/cocina/back.webp",
+  },
+
+  lobby: {
+    right: "/cubemaps/lobby/right.webp",
+    left: "/cubemaps/lobby/left.webp",
+    top: "/cubemaps/lobby/top.webp",
+    bottom: "/cubemaps/lobby/bottom.webp",
+    front: "/cubemaps/lobby/front.webp",
+    back: "/cubemaps/lobby/back.webp",
+  },
+};
+
+const secciones = [
+  { id: "terraza", label: "Terraza", emoji: "☀️", href: "/terraza" },
+  { id: "suites", label: "Suites", emoji: "🛏️", href: "/suites" },
+  { id: "areas-sociales", label: "Áreas Sociales", emoji: "🏊️", href: "/areas-sociales" },
+];
+---
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+<nav id="menu-nav">
+  <button id="btn-menu" aria-label="Abrir menú">
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+  </button>
+
+  <div id="menu-panel" class="cerrado">
+    <p class="menu-titulo">Explorar</p>
+
+    {
+      secciones.map((s) => (
+        <a href={s.href} class="menu-item" data-id={s.id}>
+          <span class="menu-emoji">{s.emoji}</span>
+          <span class="menu-label">{s.label}</span>
+        </a>
+      ))
+    }
+  </div>
+</nav>
+
+<div class="contenedor-vr">
+  <a-scene
+    embedded
+    renderer="
+      antialias: true;
+      colorManagement: true;
+      physicallyCorrectLights: true;
+      precision: high;
+    "
+    vr-mode-ui="enabled: true"
+  >
+    <a-entity
+      id="camera"
+      position="0 1.6 0"
+      camera="fov: 70"
+      look-controls
+    ></a-entity>
+  </a-scene>
+</div>
+
+<style>
+  .contenedor-vr {
+    width: 100%;
+    height: 100vh;
+    background: #000;
+  }
+
+  #menu-nav {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  #btn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+  }
+
+  #menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transform-origin: top left;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  #menu-panel.cerrado {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
+
+  #menu-panel.abierto {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+  }
+
+  .menu-titulo {
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 8px;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+
+  .menu-item:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .menu-item.activo {
+    background: rgba(255,255,255,0.15);
+    font-weight: 600;
+  }
+
+  .menu-emoji {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .menu-label {
+    flex: 1;
+  }
+</style>
+
+<script define:vars={{ cubemaps }} is:inline>
+  let skyboxActual = null;
+
+  window.cargarEscena = function(nombreEscena) {
+
+    const sceneEl = document.querySelector('a-scene');
+
+    if (!sceneEl || !window.THREE) return;
+
+    const data = cubemaps[nombreEscena];
+
+    if (!data) {
+      console.error('Cubemap no encontrado:', nombreEscena);
+      return;
+    }
+
+    const loader = new THREE.CubeTextureLoader();
+
+    const texture = loader.load([
+      data.right,
+      data.left,
+      data.top,
+      data.bottom,
+      data.front,
+      data.back,
+    ]);
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+
+    const renderer = sceneEl.renderer;
+
+    if (renderer) {
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    }
+
+    sceneEl.object3D.background = texture;
+
+    skyboxActual = texture;
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    const btnMenu = document.getElementById('btn-menu');
+    const panel = document.getElementById('menu-panel');
+
+    btnMenu.addEventListener('click', () => {
+
+      const abierto = panel.classList.toggle('abierto');
+
+      panel.classList.toggle('cerrado', !abierto);
+
+    });
+
+    document.addEventListener('click', (e) => {
+
+      if (!btnMenu.contains(e.target) && !panel.contains(e.target)) {
+
+        panel.classList.remove('abierto');
+        panel.classList.add('cerrado');
+
+      }
+
+    });
+
+    const rutaActual = window.location.pathname.replace('/', '');
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+
+      if (
+        item.dataset.id === rutaActual ||
+        (rutaActual === '' && item.dataset.id === 'areas-sociales')
+      ) {
+        item.classList.add('activo');
+      }
+
+    });
+
+    const scene = document.querySelector('a-scene');
+
+    scene.addEventListener('loaded', () => {
+
+      scene.renderer.setPixelRatio(window.devicePixelRatio);
+
+      window.cargarEscena('entrada');
+
+    });
+
+  });
+</script>
+
+<script>
+  import PartySocket from "partysocket";
+
+  const seccionActual = "terraza";
+
+  const socket = new PartySocket({
+    host: "tu-proyecto.jsn1096.partykit.dev",
+    room: "sala-demo",
+  });
+
+  socket.addEventListener("message", (e) => {
+
+    const data = JSON.parse(e.data);
+
+    if (data.type === "cambiar-escena") {
+
+      window.cargarEscena?.(data.escena);
+
+    }
+
+  });
+</script>
