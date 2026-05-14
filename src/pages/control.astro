@@ -5,19 +5,22 @@ const secciones = [
     id: "terraza",
     label: "Terraza",
     emoji: "☀️",
-    escenas: ["cocina", "sala", "gym", "jacuzzi"]
+    escenas: ["cocina", "sala", "gym", "jacuzzi"],
+    videos: []
   },
   {
     id: "suites",
     label: "Suites",
     emoji: "🛏️",
-    escenas: ["estudio411", "departamento610", "cuarto1610", "cuarto2610", "estudio404"]
+    escenas: ["estudio411", "departamento610", "cuarto1610", "cuarto2610", "estudio404"],
+    videos: []
   },
   {
     id: "areas-sociales",
     label: "Áreas Sociales",
     emoji: "🏊️",
-    escenas: ["contentarea", "entrada", "lobby", "coworking"]
+    escenas: ["contentarea", "entrada", "lobby", "coworking", "tour_lobby"],
+    videos: ["tour_lobby"]
   },
 ];
 ---
@@ -37,18 +40,26 @@ const secciones = [
   </header>
 
   <div id="secciones">
-    {secciones.map(sec => (
-      <div class="seccion">
-        <h2>{sec.emoji} {sec.label}</h2>
-        <div class="escenas">
-          {sec.escenas.map(escena => (
-            <button class="btn-escena" data-escena={escena} data-seccion={sec.id}>
-              {escena}
-            </button>
-          ))}
-        </div>
-      </div>
-    ))}
+{secciones.map(sec => (
+  <div class="seccion">
+    <h2>{sec.emoji} {sec.label}</h2>
+
+    <div class="escenas">
+      {sec.escenas.map(escena => (
+        <button class="btn-escena" data-escena={escena} data-tipo="escena" data-seccion={sec.id}>
+          {escena}
+        </button>
+      ))}
+
+      {/* 👇 Botones de video con icono distintivo */}
+      {sec.videos.map(video => (
+        <button class="btn-escena btn-video" data-escena={video} data-tipo="video" data-seccion={sec.id}>
+          🎬 {video}
+        </button>
+      ))}
+    </div>
+  </div>
+))}
   </div>
 
   <div id="actual">
@@ -125,6 +136,21 @@ const secciones = [
     font-weight: 700;
   }
 
+  .btn-video {
+  border-color: rgba(251, 191, 36, 0.4);  /* amarillo sutil */
+  color: #FCD34D;
+}
+
+.btn-video:hover {
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.btn-video.activo {
+  background: #D97706;
+  border-color: #D97706;
+  color: white;
+}
+
   #actual {
     margin-top: 40px;
     padding: 20px;
@@ -157,28 +183,34 @@ const secciones = [
     dotEstado.className = "dot desconectado";
   });
 
-  socket.addEventListener("message", (e) => {
-    const data = JSON.parse(e.data);
-    if (data.type === "cambiar-escena") {
-      escenaActual.textContent = data.escena;
+// Escuchar mensajes entrantes (ambos tipos)
+socket.addEventListener("message", (e) => {
+  const data = JSON.parse(e.data);
 
-      document.querySelectorAll(".btn-escena").forEach((btn) => {
-        const el = btn as HTMLElement;
-        el.classList.toggle("activo", el.dataset.escena === data.escena);
-      });
-    }
-  });
+  if (data.type === "cambiar-escena" || data.type === "cambiar-video") {
+    const icono = data.type === "cambiar-video" ? "🎬 " : "";
+    escenaActual.textContent = icono + data.escena;
 
-  document.querySelectorAll(".btn-escena").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    document.querySelectorAll(".btn-escena").forEach((btn) => {
       const el = btn as HTMLElement;
-      socket.send(JSON.stringify({
-        type: "cambiar-escena",
-        escena: el.dataset.escena,
-        seccion: el.dataset.seccion,
-      }));
+      el.classList.toggle("activo", el.dataset.escena === data.escena);
     });
+  }
+});
+
+// Enviar al hacer click — detecta tipo automáticamente
+document.querySelectorAll(".btn-escena").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const el = btn as HTMLElement;
+    const tipo = el.dataset.tipo; // "escena" o "video"
+
+    socket.send(JSON.stringify({
+      type: tipo === "video" ? "cambiar-video" : "cambiar-escena",
+      escena: el.dataset.escena,   // reutilizamos el mismo campo
+      seccion: el.dataset.seccion,
+    }));
   });
+});
 </script>
 
 </body>

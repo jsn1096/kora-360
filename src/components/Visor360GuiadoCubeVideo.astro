@@ -1,0 +1,396 @@
+---
+const cubemaps = {
+  entrada1: {
+    right: "/cubemaps/entrada1/px.jpg",
+    left: "/cubemaps/entrada1/nx.jpg",
+    top: "/cubemaps/entrada1/py.jpg",
+    bottom: "/cubemaps/entrada1/ny.jpg",
+    front: "/cubemaps/entrada1/pz.jpg",
+    back: "/cubemaps/entrada1/nz.jpg",
+  },
+  entrada2: {
+    right: "/cubemaps/entrada2/px.jpg",
+    left: "/cubemaps/entrada2/nx.jpg",
+    top: "/cubemaps/entrada2/py.jpg",
+    bottom: "/cubemaps/entrada2/ny.jpg",
+    front: "/cubemaps/entrada2/pz.jpg",
+    back: "/cubemaps/entrada2/nz.jpg",
+  },
+  gym: {
+    right: "/cubemaps/gym/px.png",
+    left: "/cubemaps/gym/nx.png",
+    top: "/cubemaps/gym/py.png",
+    bottom: "/cubemaps/gym/ny.png",
+    front: "/cubemaps/gym/pz.png",
+    back: "/cubemaps/gym/nz.png",
+  },
+
+  cocina: {
+    right: "/cubemaps/cocina/px.jpg",
+    left: "/cubemaps/cocina/nx.jpg",
+    top: "/cubemaps/cocina/py.jpg",
+    bottom: "/cubemaps/cocina/ny.jpg",
+    front: "/cubemaps/cocina/pz.jpg",
+    back: "/cubemaps/cocina/nz.jpg",
+  },
+
+  lobby: {
+    right: "/cubemaps/lobby/px.jpg",
+    left: "/cubemaps/lobby/nx.jpg",
+    top: "/cubemaps/lobby/py.jpg",
+    bottom: "/cubemaps/lobby/ny.jpg",
+    front: "/cubemaps/lobby/pz.jpg",
+    back: "/cubemaps/lobby/nz.jpg",
+  },
+
+  coworking: {
+    right: "/cubemaps/coworking/px.jpg",
+    left: "/cubemaps/coworking/nx.jpg",
+    top: "/cubemaps/coworking/py.jpg",
+    bottom: "/cubemaps/coworking/ny.jpg",
+    front: "/cubemaps/coworking/pz.jpg",
+    back: "/cubemaps/coworking/nz.jpg",
+  },
+};
+
+const videos = {
+  tour_lobby: "https://storage.googleapis.com/bucket-jsn/KORA%20-CONCEPTO%20.mp4",
+};
+
+const secciones = [
+  { id: "terraza", label: "Terraza", emoji: "☀️", href: "/terraza" },
+  { id: "suites", label: "Suites", emoji: "🛏️", href: "/suites" },
+  { id: "areas-sociales", label: "Áreas Sociales", emoji: "🏊️", href: "/areas-sociales" },
+];
+---
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+<nav id="menu-nav">
+  <button id="btn-menu" aria-label="Abrir menú">
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+    <span class="hamburger"></span>
+  </button>
+
+  <div id="menu-panel" class="cerrado">
+    <p class="menu-titulo">Explorar</p>
+
+    {
+      secciones.map((s) => (
+        <a href={s.href} class="menu-item" data-id={s.id}>
+          <span class="menu-emoji">{s.emoji}</span>
+          <span class="menu-label">{s.label}</span>
+        </a>
+      ))
+    }
+  </div>
+</nav>
+
+<div class="contenedor-vr">
+  <a-scene
+    embedded
+    renderer="
+      antialias: true;
+      colorManagement: true;
+      physicallyCorrectLights: true;
+      precision: high;
+    "
+    vr-mode-ui="enabled: true"
+  >
+
+  <a-assets>
+      <!-- ✅ Pre-declaras los videos aquí para que A-Frame los gestione -->
+      <video id="video-360" loop crossorigin="anonymous" playsinline webkit-playsinline
+             style="display:none"></video>
+    </a-assets>
+
+    <!-- Skybox para cubemaps (imagen) -->
+    <a-sky id="sky-imagen" visible="false" radius="500"></a-sky>
+
+    <!-- Skybox para videos -->
+    <a-videosphere id="sky-video" src="#video-360" visible="false" radius="500"></a-videosphere>
+    <a-entity
+      id="camera"
+      position="0 1.6 0"
+      camera="fov: 70"
+      look-controls
+    ></a-entity>
+  </a-scene>
+</div>
+
+<style>
+  .contenedor-vr {
+    width: 100%;
+    height: 100vh;
+    background: #000;
+  }
+
+  #menu-nav {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  #btn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+  }
+
+  #menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transform-origin: top left;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  #menu-panel.cerrado {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
+
+  #menu-panel.abierto {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+  }
+
+  .menu-titulo {
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 8px;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+
+  .menu-item:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .menu-item.activo {
+    background: rgba(255,255,255,0.15);
+    font-weight: 600;
+  }
+
+  .menu-emoji {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .menu-label {
+    flex: 1;
+  }
+</style>
+
+<script define:vars={{ cubemaps, videos }} is:inline>
+  let skyboxActual = null;
+  let videoActual = null;
+
+// ✅ Cargar cubemap (igual que antes, sin cambios)
+window.cargarEscena = function(nombreEscena) {
+  const sceneEl = document.querySelector('a-scene');
+  if (!sceneEl || !window.THREE) return;
+
+  const data = cubemaps[nombreEscena];
+  if (!data) return;
+
+  // Ocultar video si estaba activo
+  _detenerVideo();
+
+  const loader = new THREE.CubeTextureLoader();
+  const texture = loader.load([data.right, data.left, data.top, data.bottom, data.front, data.back]);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  const renderer = sceneEl.renderer;
+  if (renderer) texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  sceneEl.object3D.background = texture;
+  skyboxActual = texture;
+
+  // Ocultar a-videosphere, mostrar nada (background cubre todo)
+  document.getElementById('sky-video').setAttribute('visible', 'false');
+};
+
+// ✅ NUEVO: Cargar video 360°
+window.cargarVideo = function(nombreVideo) {
+  const sceneEl = document.querySelector('a-scene');
+  if (!sceneEl) return;
+
+  // ✅ Si ya es una URL completa la usa directo, si no busca en el objeto
+  const src = nombreVideo.startsWith('http') 
+    ? nombreVideo 
+    : videos[nombreVideo];
+  if (!src) {
+    console.error('Video no encontrado:', nombreVideo);
+    return;
+  }
+
+  // Limpiar skybox de imagen anterior
+  sceneEl.object3D.background = null;
+  if (skyboxActual) {
+    skyboxActual.dispose();
+    skyboxActual = null;
+  }
+
+  // Cambiar src del video y reproducir
+  const videoEl = document.getElementById('video-360');
+  videoEl.src = src;
+  videoEl.load();
+
+  videoEl.play().catch(err => {
+    console.warn('Autoplay bloqueado, esperando interacción:', err);
+  });
+
+  // Mostrar a-videosphere
+  document.getElementById('sky-video').setAttribute('visible', 'true');
+
+  videoActual = videoEl;
+
+    // Si el play falla, mostrar botón de activación
+  videoEl.play().catch(() => {
+    mostrarBotonPlay(videoEl);
+  });
+
+  
+};
+
+function _detenerVideo() {
+  if (videoActual) {
+    videoActual.pause();
+    videoActual.src = '';
+    videoActual = null;
+  }
+  const skyVideo = document.getElementById('sky-video');
+  if (skyVideo) skyVideo.setAttribute('visible', 'false');
+}
+
+function mostrarBotonPlay(videoEl) {
+  const btn = document.createElement('button');
+  btn.textContent = '▶ Iniciar video';
+  btn.style.cssText = `
+    position: fixed; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; padding: 16px 32px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid white; border-radius: 12px;
+    color: white; font-size: 18px; cursor: pointer;
+    backdrop-filter: blur(10px);
+  `;
+  btn.onclick = () => { videoEl.play(); btn.remove(); };
+  document.body.appendChild(btn);
+}
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    const btnMenu = document.getElementById('btn-menu');
+    const panel = document.getElementById('menu-panel');
+
+    btnMenu.addEventListener('click', () => {
+
+      const abierto = panel.classList.toggle('abierto');
+
+      panel.classList.toggle('cerrado', !abierto);
+
+    });
+
+    document.addEventListener('click', (e) => {
+
+      if (!btnMenu.contains(e.target) && !panel.contains(e.target)) {
+
+        panel.classList.remove('abierto');
+        panel.classList.add('cerrado');
+
+      }
+
+    });
+
+    const rutaActual = window.location.pathname.replace('/', '');
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+
+      if (
+        item.dataset.id === rutaActual ||
+        (rutaActual === '' && item.dataset.id === 'areas-sociales')
+      ) {
+        item.classList.add('activo');
+      }
+
+    });
+
+    const scene = document.querySelector('a-scene');
+
+    scene.addEventListener('loaded', () => {
+
+      scene.renderer.setPixelRatio(window.devicePixelRatio);
+
+      window.cargarEscena('entrada');
+
+    });
+
+  });
+</script>
+
+<script>
+  import PartySocket from "partysocket";
+
+  const seccionActual = "terraza";
+
+  const socket = new PartySocket({
+    host: "tu-proyecto.jsn1096.partykit.dev",
+    room: "sala-demo",
+  });
+
+socket.addEventListener("message", (e) => {
+  const data = JSON.parse(e.data);
+
+  if (data.type === "cambiar-escena") {
+    window.cargarEscena?.(data.escena);
+  }
+
+  if (data.type === "cambiar-video") {
+    console.log("📦 data recibida:", data); // 👈 agrega esto temporalmente
+    window.cargarVideo?.(data.escena);      // 👈 ¿estás usando data.escena o data.video?
+  }
+});
+</script>
