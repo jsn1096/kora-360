@@ -109,7 +109,14 @@ const secciones = [
     <a-sky id="sky-imagen" visible="false" radius="500"></a-sky>
 
     <!-- Skybox para videos -->
-    <a-videosphere id="sky-video" src="#video-360" visible="false" radius="500"></a-videosphere>
+    <a-video
+  id="sky-video"
+  src="#video-360"
+  width="16"
+  height="9"
+  position="0 1.6 -8"
+  visible="false"
+></a-video>
     <a-entity
       id="camera"
       position="0 1.6 0"
@@ -227,19 +234,31 @@ const secciones = [
   let skyboxActual = null;
   let videoActual = null;
 
-// ✅ Cargar cubemap (igual que antes, sin cambios)
 window.cargarEscena = function(nombreEscena) {
   const sceneEl = document.querySelector('a-scene');
   if (!sceneEl || !window.THREE) return;
 
   const data = cubemaps[nombreEscena];
-  if (!data) return;
+  if (!data) {
+    console.error('Cubemap no encontrado:', nombreEscena);
+    return;
+  }
 
-  // Ocultar video si estaba activo
+  // 👇 CRÍTICO: detener video y ocultarlo antes de cargar cubemap
   _detenerVideo();
 
+  // Limpiar background anterior
+  if (skyboxActual) {
+    skyboxActual.dispose();
+    skyboxActual = null;
+  }
+
   const loader = new THREE.CubeTextureLoader();
-  const texture = loader.load([data.right, data.left, data.top, data.bottom, data.front, data.back]);
+  const texture = loader.load([
+    data.right, data.left, data.top,
+    data.bottom, data.front, data.back,
+  ]);
+
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const renderer = sceneEl.renderer;
@@ -247,9 +266,6 @@ window.cargarEscena = function(nombreEscena) {
 
   sceneEl.object3D.background = texture;
   skyboxActual = texture;
-
-  // Ocultar a-videosphere, mostrar nada (background cubre todo)
-  document.getElementById('sky-video').setAttribute('visible', 'false');
 };
 
 // ✅ NUEVO: Cargar video 360°
@@ -257,52 +273,51 @@ window.cargarVideo = function(nombreVideo) {
   const sceneEl = document.querySelector('a-scene');
   if (!sceneEl) return;
 
-  // ✅ Si ya es una URL completa la usa directo, si no busca en el objeto
-  const src = nombreVideo.startsWith('http') 
-    ? nombreVideo 
-    : videos[nombreVideo];
-  if (!src) {
-    console.error('Video no encontrado:', nombreVideo);
-    return;
-  }
+  if (!nombreVideo) return;
 
-  // Limpiar skybox de imagen anterior
-  sceneEl.object3D.background = null;
+  const src = nombreVideo.startsWith('http')
+    ? nombreVideo
+    : videos[nombreVideo];
+
+  if (!src) return;
+
+  // Limpiar cubemap anterior
   if (skyboxActual) {
     skyboxActual.dispose();
     skyboxActual = null;
   }
 
-  // Cambiar src del video y reproducir
+  // 👇 Fondo negro para que la pantalla se vea bien
+  sceneEl.object3D.background = new THREE.Color(0x000000);
+
   const videoEl = document.getElementById('video-360');
   videoEl.src = src;
   videoEl.load();
+  videoEl.play().catch(() => mostrarBotonPlay(videoEl));
 
-  videoEl.play().catch(err => {
-    console.warn('Autoplay bloqueado, esperando interacción:', err);
-  });
-
-  // Mostrar a-videosphere
   document.getElementById('sky-video').setAttribute('visible', 'true');
-
   videoActual = videoEl;
-
-    // Si el play falla, mostrar botón de activación
-  videoEl.play().catch(() => {
-    mostrarBotonPlay(videoEl);
-  });
-
-  
 };
 
 function _detenerVideo() {
-  if (videoActual) {
-    videoActual.pause();
-    videoActual.src = '';
-    videoActual = null;
+  const videoEl = document.getElementById('video-360');
+  if (videoEl) {
+    videoEl.pause();
+    videoEl.src = '';      // 👈 esto corta el stream completamente
+    videoEl.load();        // 👈 resetea el elemento
   }
+
   const skyVideo = document.getElementById('sky-video');
-  if (skyVideo) skyVideo.setAttribute('visible', 'false');
+  if (skyVideo) {
+    skyVideo.setAttribute('visible', 'false');
+    // 👇 desconectar la textura de three.js también
+    const mesh = skyVideo.getObject3D('mesh');
+    if (mesh && mesh.material && mesh.material.map) {
+      mesh.material.map.dispose();
+    }
+  }
+
+  videoActual = null;
 }
 
 function mostrarBotonPlay(videoEl) {
