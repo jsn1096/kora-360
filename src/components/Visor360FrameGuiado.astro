@@ -16,9 +16,9 @@ const imagenes = {
 };
 
 const secciones = [
-  { id: "terraza",         label: "Terraza",        emoji: "☀️",  href: "/terraza" },
-  { id: "suites",          label: "Suites",          emoji: "🛏️",  href: "/suites" },
-  { id: "areas-sociales",  label: "Áreas Sociales",  emoji: "🏊️", href: "/areas-sociales" },
+  { id: "terraza", label: "Terraza", emoji: "☀️", href: "/terraza" },
+  { id: "suites", label: "Suites", emoji: "🛏️", href: "/suites" },
+  { id: "areas-sociales", label: "Áreas Sociales", emoji: "🏊️", href: "/areas-sociales" },
 ];
 ---
 
@@ -35,35 +35,94 @@ const secciones = [
 
   <div id="menu-panel" class="cerrado">
     <p class="menu-titulo">Explorar</p>
-    {secciones.map(s => (
+
+    {secciones.map((s) => (
       <a href={s.href} class="menu-item" data-id={s.id}>
         <span class="menu-emoji">{s.emoji}</span>
         <span class="menu-label">{s.label}</span>
       </a>
     ))}
+
+    <!-- BOTONES DEMO -->
+    <button onclick="window.mostrarVideo()" class="menu-video-btn">
+      🎬 Ver Video
+    </button>
+
+    <button onclick="window.mostrarPanorama('entrada')" class="menu-video-btn">
+      🌎 Volver Panorama
+    </button>
   </div>
 </nav>
 
 <div class="contenedor-vr">
-  <a-scene embedded xr-mode-ui="enabled: true" renderer="
-    antialias: true;
-    colorManagement: true;
-    physicallyCorrectLights: true;
-    highRefreshRate: true;
-    precision: high;
-  ">
+  <a-scene
+    embedded
+    xr-mode-ui="enabled: true"
+    renderer="
+      antialias: true;
+      colorManagement: true;
+      physicallyCorrectLights: true;
+      highRefreshRate: true;
+      precision: high;
+    "
+  >
     <a-assets>
+
       {Object.entries(imagenes).map(([id, url]) => (
         <img id={id} src={url} crossorigin="anonymous" />
       ))}
+
+      <!-- VIDEO -->
+      <video
+        id="video-demo"
+        src="/videos/KORA-CONCEPTO.mp4"
+        loop
+        muted
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        preload="auto"
+      ></video>
+
     </a-assets>
 
-    <a-entity id="camera" camera="fov: 70" look-controls></a-entity>
+    <!-- VIDEO CURVO -->
+    <a-curvedimage
+      id="pantalla-video"
+      src="#video-demo"
+      radius="8"
+      theta-length="120"
+      height="5"
+      position="0 2 -1"
+      visible="false"
+    ></a-curvedimage>
+
+    <!-- LUCES -->
+    <a-light type="ambient" intensity="0.2"></a-light>
+
+    <a-light
+      type="point"
+      intensity="0.5"
+      position="0 3 -4"
+    ></a-light>
+
+    <!-- CAMARA -->
+    <a-entity
+      id="camera"
+      position="0 1.6 0"
+      camera="fov: 70"
+      look-controls
+    ></a-entity>
+
   </a-scene>
 </div>
 
 <style>
-  .contenedor-vr { width: 100%; height: 100vh; background: #000; }
+  .contenedor-vr {
+    width: 100%;
+    height: 100vh;
+    background: #000;
+  }
 
   #menu-nav {
     position: fixed;
@@ -91,7 +150,6 @@ const secciones = [
     height: 2px;
     background: white;
     border-radius: 2px;
-    transition: all 0.3s;
   }
 
   #menu-panel {
@@ -103,7 +161,7 @@ const secciones = [
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 14px;
     padding: 12px;
-    min-width: 200px;
+    min-width: 220px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -131,7 +189,8 @@ const secciones = [
     margin: 0 0 4px 8px;
   }
 
-  .menu-item {
+  .menu-item,
+  .menu-video-btn {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -141,76 +200,204 @@ const secciones = [
     text-decoration: none;
     font-size: 15px;
     transition: background 0.15s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
   }
 
-  .menu-item:hover  { background: rgba(255,255,255,0.1); }
-  .menu-item.activo { background: rgba(255,255,255,0.15); font-weight: 600; }
+  .menu-item:hover,
+  .menu-video-btn:hover {
+    background: rgba(255,255,255,0.1);
+  }
 
-  .menu-emoji { font-size: 18px; width: 24px; text-align: center; }
-  .menu-label { flex: 1; }
+  .menu-item.activo {
+    background: rgba(255,255,255,0.15);
+    font-weight: 600;
+  }
+
+  .menu-emoji {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .menu-label {
+    flex: 1;
+  }
 </style>
 
 <script is:inline>
-  // Exponer cargarEscena globalmente para que el script de PartySocket la llame
-window.cargarEscena = function(nombreEscena) {
-  const scene = document.querySelector('a-scene');
-  if (!scene) return;
 
-  const cieloViejo = document.querySelector('.cielo-dinamico');
-  if (cieloViejo) cieloViejo.parentNode.removeChild(cieloViejo);
+  // MOSTRAR VIDEO
+  window.mostrarVideo = async function() {
 
-  const cieloNuevo = document.createElement('a-sky');
+    const pantalla = document.getElementById('pantalla-video');
 
-  cieloNuevo.setAttribute('class', 'cielo-dinamico');
-  cieloNuevo.setAttribute('src', `#${nombreEscena}`);
-  cieloNuevo.setAttribute('rotation', '0 -90 0');
-  cieloNuevo.setAttribute('material', 'shader: flat');
+    pantalla.setAttribute('visible', true);
 
-  scene.appendChild(cieloNuevo);
+    const video = document.getElementById('video-demo');
 
-  cieloNuevo.addEventListener('loaded', () => {
-    const texture = cieloNuevo.getObject3D('mesh').material.map;
+    try {
+      await video.play();
+    } catch (err) {
+      console.error(err);
+    }
 
-    const renderer = scene.renderer;
-    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    const sceneEl = document.querySelector('a-scene');
 
-    texture.anisotropy = maxAnisotropy;
-    texture.needsUpdate = true;
-  });
-}
+    sceneEl.object3D.background = new THREE.Color(0x000000);
+
+    const cielo = document.querySelector('.cielo-dinamico');
+
+    if (cielo) {
+      cielo.setAttribute('visible', false);
+    }
+
+  }
+
+  // VOLVER PANORAMA
+  window.mostrarPanorama = function(nombreEscena) {
+
+    const pantalla = document.getElementById('pantalla-video');
+
+    pantalla.setAttribute('visible', false);
+
+    const video = document.getElementById('video-demo');
+
+    video.pause();
+
+    const cielo = document.querySelector('.cielo-dinamico');
+
+    if (cielo) {
+      cielo.setAttribute('visible', true);
+    }
+
+    window.cargarEscena(nombreEscena);
+
+  }
+
+  // CARGAR PANORAMA
+  window.cargarEscena = function(nombreEscena) {
+
+    const scene = document.querySelector('a-scene');
+
+    if (!scene) return;
+
+    const cieloViejo = document.querySelector('.cielo-dinamico');
+
+    if (cieloViejo) {
+      cieloViejo.parentNode.removeChild(cieloViejo);
+    }
+
+    const cieloNuevo = document.createElement('a-sky');
+
+    cieloNuevo.setAttribute('class', 'cielo-dinamico');
+
+    cieloNuevo.setAttribute('src', `#${nombreEscena}`);
+
+    cieloNuevo.setAttribute('rotation', '0 -90 0');
+
+    cieloNuevo.setAttribute('material', 'shader: flat');
+
+    scene.appendChild(cieloNuevo);
+
+    cieloNuevo.addEventListener('loaded', () => {
+
+      const texture = cieloNuevo.getObject3D('mesh').material.map;
+
+      const renderer = scene.renderer;
+
+      const maxAnisotropy =
+        renderer.capabilities.getMaxAnisotropy();
+
+      texture.anisotropy = maxAnisotropy;
+
+      texture.needsUpdate = true;
+
+    });
+
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Menú hamburguesa
+
+    // MENU
     const btnMenu = document.getElementById('btn-menu');
-    const panel   = document.getElementById('menu-panel');
+
+    const panel = document.getElementById('menu-panel');
 
     btnMenu.addEventListener('click', () => {
+
       const abierto = panel.classList.toggle('abierto');
+
       panel.classList.toggle('cerrado', !abierto);
+
     });
 
     document.addEventListener('click', (e) => {
-      if (!btnMenu.contains(e.target) && !panel.contains(e.target)) {
+
+      if (
+        !btnMenu.contains(e.target) &&
+        !panel.contains(e.target)
+      ) {
+
         panel.classList.remove('abierto');
+
         panel.classList.add('cerrado');
+
       }
+
     });
 
-    const rutaActual = window.location.pathname.replace('/', '');
-    document.querySelectorAll('.menu-item').forEach(item => {
-      if (item.dataset.id === rutaActual || (rutaActual === '' && item.dataset.id === 'areas-sociales')) {
-        item.classList.add('activo');
-      }
-    });
+    // MENU ACTIVO
+    const rutaActual =
+      window.location.pathname.replace('/', '');
 
-    // Cargar escena inicial
+    document.querySelectorAll('.menu-item')
+      .forEach(item => {
+
+        if (
+          item.dataset.id === rutaActual ||
+          (
+            rutaActual === '' &&
+            item.dataset.id === 'areas-sociales'
+          )
+        ) {
+
+          item.classList.add('activo');
+
+        }
+
+      });
+
+    // CARGA ESCENA
     const scene = document.querySelector('a-scene');
-    if (scene.hasLoaded) window.cargarEscena('entrada');
-    else scene.addEventListener('loaded', () => {
-      AFRAME.scenes[0].renderer.setPixelRatio(window.devicePixelRatio);
-      window.cargarEscena('entrada')
-    });
+
+    if (scene.hasLoaded) {
+
+      AFRAME.scenes[0]
+        .renderer
+        .setPixelRatio(window.devicePixelRatio);
+
+      window.cargarEscena('entrada');
+
+    } else {
+
+      scene.addEventListener('loaded', () => {
+
+        AFRAME.scenes[0]
+          .renderer
+          .setPixelRatio(window.devicePixelRatio);
+
+        window.cargarEscena('entrada');
+
+      });
+
+    }
+
   });
+
 </script>
 
 <script>
@@ -219,19 +406,19 @@ window.cargarEscena = function(nombreEscena) {
   const seccionActual = "terraza";
 
   const socket = new PartySocket({
-    host: "tu-proyecto.jsn1096.partykit.dev", // ← tu URL real
+    host: "tu-proyecto.jsn1096.partykit.dev",
     room: "sala-demo",
   });
 
   socket.addEventListener("message", (e) => {
+
     const data = JSON.parse(e.data);
+
     if (data.type === "cambiar-escena") {
-      //Comento esto porque ahora el cambio de escena no recarga la página, sino que solo cambia el cielo. Si quieres que recargue la página al cambiar de sección, puedes descomentar este bloque y ajustar las URLs según tu estructura.
-      // if (data.seccion && data.seccion !== seccionActual) {
-      //   window.location.href = `/${data.seccion}?escena=${data.escena}`;
-      //   return;
-      // }
+
       window.cargarEscena?.(data.escena);
+
     }
+
   });
 </script>
