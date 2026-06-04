@@ -1,0 +1,19 @@
+---
+import Visor360Suites from '../../components/Visor360Suites.astro';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+    return [
+        { params: { slug: '606' } },
+        { params: { slug: '607' } }
+    ];
+}
+
+const { slug } = Astro.params; // Extraemos el slug de la URL
+---
+<Layout title=`Suite ${slug}`>
+	<main>
+		<Visor360Suites suite={slug} />
+		<!-- <Visor360AFrame /> -->
+	</main>
+</Layout>
