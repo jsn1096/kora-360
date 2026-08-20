@@ -1,11 +1,5 @@
 ---
-const {estudio} = Astro.props;
-// Visor360.astro
-const imagenEstudio = `/renders/${estudio}-360.webp`; 
-const imagenCuarto1 = "/renders/cuarto1-360.webp";
-const imagenCuarto2 = "/renders/cuarto2-360.webp";
-// const imagenGym = "/renders/360-gym.webp";
-// const imagenJacuzzi = "/renders/jacuzzi-360.webp";
+const { dep, config } = Astro.props;
 ---
 
 <div id="panorama-wrapper" style="width: 100%; height: 100vh; position: relative; background-color: #2c2c2c;">
@@ -53,17 +47,14 @@ const imagenCuarto2 = "/renders/cuarto2-360.webp";
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
-<script define:vars={{ imagenEstudio, estudio, imagenCuarto1, imagenCuarto2 }}>
+<script define:vars={{ config, dep }}>
   let visor = null;
 
-  // Inyectar el menú con estilos 100% inline (no depende de clases externas)
+  // Inyectar el menú dinámico para navegar entre las habitaciones del departamento actual
   const crearMenu = () => {
-    const escenas = [
-      { id: 'estudio411', label: `Departamento ${estudio}`, icono: '🏠' },
-    ];
+    if (document.getElementById('menu-escenas')) return;
 
     const wrapper = document.getElementById('panorama-wrapper');
-
     const menu = document.createElement('div');
     menu.id = 'menu-escenas';
     Object.assign(menu.style, {
@@ -80,10 +71,12 @@ const imagenCuarto2 = "/renders/cuarto2-360.webp";
       padding: '6px 10px',
     });
 
-    escenas.forEach(({ id, label, icono }) => {
+    // Generar botones según las escenas del objeto config
+    Object.keys(config.scenes).forEach((sceneId) => {
+      const escena = config.scenes[sceneId];
       const btn = document.createElement('button');
-      btn.dataset.escena = id;
-      btn.innerHTML = `<span style="font-size:14px">${icono}</span> ${label}`;
+      btn.dataset.escena = sceneId;
+      btn.innerHTML = `<span style="font-size:14px">📍</span> ${escena.title || sceneId}`;
 
       const estilosBase = {
         background: 'transparent',
@@ -118,8 +111,8 @@ const imagenCuarto2 = "/renders/cuarto2-360.webp";
 
       btn.addEventListener('click', () => {
         if (visor) {
-          visor.loadScene(id);
-          actualizarMenuActivo(id);
+          visor.loadScene(sceneId);
+          actualizarMenuActivo(sceneId);
         }
       });
 
@@ -127,9 +120,7 @@ const imagenCuarto2 = "/renders/cuarto2-360.webp";
     });
 
     wrapper.appendChild(menu);
-
-    // Activar el primero por defecto
-    actualizarMenuActivo('estudio411');
+    actualizarMenuActivo(config.firstScene);
   };
 
   const actualizarMenuActivo = (escenaId) => {
@@ -145,60 +136,32 @@ const imagenCuarto2 = "/renders/cuarto2-360.webp";
 
   const iniciarVisor = () => {
     if (document.getElementById('panorama') && typeof pannellum !== 'undefined') {
-
       crearMenu();
+
+      if (visor) return;
+
+      // Configuración de Pannellum usando el objeto config inyectado
+      const pannellumScenes = {};
+      Object.keys(config.scenes).forEach((sceneId) => {
+        const item = config.scenes[sceneId];
+        pannellumScenes[sceneId] = {
+          type: "equirectangular",
+          panorama: item.panorama,
+          hotSpots: item.hotSpots || []
+        };
+      });
 
       visor = pannellum.viewer('panorama', {
         "default": {
-          "firstScene": "estudio411",
+          "firstScene": config.firstScene,
           "sceneFadeDuration": 1000,
           "autoLoad": true,
           "showControls": true,
           "autoRotate": 0
         },
-        "scenes": {
-          "estudio411": {
-            "type": "equirectangular",
-            "panorama": imagenEstudio,
-            "hotSpots": [
-              { "pitch": 0, "yaw": 225, "type": "scene", "sceneId": "cuarto1",  "cssClass": "flecha-animada" },
-              { "pitch": 0, "yaw": -210, "type": "scene", "sceneId": "cuarto2",   "cssClass": "flecha-animada" }
-            ]
-          },
-          "cuarto1": {
-            "type": "equirectangular",
-            "panorama": imagenCuarto1,
-            "hotSpots": [
-              { "pitch": 0, "yaw": 100,  "type": "scene", "sceneId": "estudio411", "cssClass": "flecha-animada" },
-            ]
-          },
-          "cuarto2": {
-            "type": "equirectangular",
-            "panorama": imagenCuarto2,
-            "hotSpots": [
-              { "pitch": 0, "yaw": 300,  "type": "scene", "sceneId": "estudio411", "cssClass": "flecha-animada" },
-            ]
-          },
-          // "gym": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenGym,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": -30, "type": "scene", "sceneId": "cocina",  "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 100, "type": "scene", "sceneId": "jacuzzi", "cssClass": "flecha-animada" }
-          //   ]
-          // },
-          // "jacuzzi": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenJacuzzi,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": -50, "type": "scene", "sceneId": "sala", "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 230, "type": "scene", "sceneId": "gym",  "cssClass": "flecha-animada" }
-          //   ]
-          // }
-        }
+        "scenes": pannellumScenes
       });
 
-      // Sincronizar menú cuando se navega con hotspots
       visor.on('scenechange', (escenaId) => {
         actualizarMenuActivo(escenaId);
       });

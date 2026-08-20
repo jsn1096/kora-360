@@ -3,16 +3,81 @@ import Visor360Dep from '../../components/Visor360Dep.astro';
 import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
-    return [
-        { params: { slug: '610' } },
-    ];
+  return [
+    { params: { slug: '610' } },
+    { params: { slug: '605' } },
+  ];
 }
 
-const { slug } = Astro.params; // Extraemos el slug de la URL
+const { slug } = Astro.params;
+
+const departamentosData = {
+  "610": {
+    firstScene: "principal",
+    scenes: {
+      principal: {
+        title: "Departamento 610",
+        panorama: "/renders/610-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 225, type: "scene", sceneId: "cuarto1", cssClass: "flecha-animada" },
+          { pitch: 0, yaw: -210, type: "scene", sceneId: "cuarto2", cssClass: "flecha-animada" }
+        ]
+      },
+      cuarto1: {
+        title: "Habitación 1",
+        panorama: "/renders/cuarto1-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 100, type: "scene", sceneId: "principal", cssClass: "flecha-animada" }
+        ]
+      },
+      cuarto2: {
+        title: "Habitación 2",
+        panorama: "/renders/cuarto2-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 300, type: "scene", sceneId: "principal", cssClass: "flecha-animada" }
+        ]
+      }
+    }
+  },
+  "605": {
+    firstScene: "principal",
+    scenes: {
+      principal: {
+        title: "Departamento 605",
+        panorama: "/renders/605-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 200, type: "scene", sceneId: "cuarto1", cssClass: "flecha-animada" },
+          { pitch: 0, yaw: -210, type: "scene", sceneId: "cuarto2", cssClass: "flecha-animada" }
+        ]
+      },
+      cuarto1: {
+        title: "Habitación 1",
+        panorama: "/renders/cuarto1-605-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 100, type: "scene", sceneId: "principal", cssClass: "flecha-animada" }
+        ]
+      },
+      cuarto2: {
+        title: "Habitación 2",
+        panorama: "/renders/cuarto2-605-360.webp",
+        hotSpots: [
+          { pitch: 0, yaw: 200, type: "scene", sceneId: "principal", cssClass: "flecha-animada" }
+        ]
+      }
+    }
+  }
+} as const; // Agregar 'as const' para tipado estricto e inmutable
+
+type SlugKey = keyof typeof departamentosData;
+const datosDep = departamentosData[slug as SlugKey];
+
+if (!datosDep) {
+  return Astro.redirect('/404');
+}
 ---
-<Layout title=`Departamento ${slug}`>
-	<main>
-		<Visor360Dep estudio={slug} />
-		<!-- <Visor360AFrame /> -->
-	</main>
+
+<Layout title={`Departamento ${slug}`}>
+  <main>
+    <Visor360Dep dep={slug} config={datosDep} />
+  </main>
 </Layout>
