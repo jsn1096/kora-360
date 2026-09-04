@@ -9,6 +9,10 @@ const lobby = "/renders/360-lobby.webp";
 const coworking = "/renders/360-coworking.webp";
 const entrada1 = "/renders/montaje-distancia-media.webp";
 const entrada2 = "/renders/montaje-distancia-corta.webp";
+const plaza = "/renders/montaje-3-ps.webp";
+const oficina = "/renders/ofi-360.webp";
+const areabbq = "/renders/360-bbq-5-ps-1.webp";
+const culturearea = "/renders/yoga-1-ps-2.webp";
 ---
 
 <div id="panorama-wrapper" style="width: 100%; height: 100vh; position: relative; background-color: #2c2c2c;">
@@ -48,19 +52,23 @@ const entrada2 = "/renders/montaje-distancia-corta.webp";
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
-<script define:vars={{ imagenCocina, imagenSala, imagenGym, imagenJacuzzi, contentarea, lobby, coworking, entrada1, entrada2 }}>
+<script define:vars={{ imagenCocina, imagenSala, imagenGym, imagenJacuzzi, contentarea, lobby, coworking, entrada1, entrada2, plaza, oficina, areabbq, culturearea }}>
   let visor = null;
 
   const escenas = [
     { id: 'entrada1', label: 'Vista desde San Ignacio 1', icono: '🏙' },
     { id: 'entrada2', label: 'Vista desde San Ignacio 2', icono: '🏙' },
+    { id: 'plaza', label: 'Plaza comercial', icono: '🏬' },
     { id: 'lobby', label: 'Lobby', icono: '🚪' },
     { id: 'contentarea', label: 'Content Area', icono: '📺' },
-    { id: 'coworking', label: 'Coworking', icono: '💼' },
-    { id: 'cocina',  label: 'Cocina',  icono: '🍳' },
-    { id: 'sala',    label: 'Sala',    icono: '🛋️' },
+    { id: 'coworking', label: 'Coworking', icono: '💻' },
+    { id: 'oficina', label: 'Oficina', icono: '💼' },
+    { id: 'cocina',  label: 'Open Kitchen',  icono: '🍳' },
+    { id: 'areabbq', label: 'Área BBQ', icono: '🔥' },
+    { id: 'sala',    label: 'Sala Comunal',    icono: '🛋️' },
     { id: 'gym',     label: 'Gym',     icono: '🏋️' },
     { id: 'jacuzzi', label: 'Jacuzzi', icono: '🛁' },
+    { id: 'culturearea', label: 'Área Cultural', icono: '🎨' },
   ];
 
   // Inyectar estilos de animación del chevron (solo lo que no se puede hacer inline)
@@ -114,7 +122,7 @@ const entrada2 = "/renders/montaje-distancia-corta.webp";
 
     const labelSpan = document.createElement('span');
     labelSpan.id = 'menu-360-label';
-    labelSpan.textContent = 'Entrada 1';
+    labelSpan.textContent = 'Plaza comercial';
     Object.assign(labelSpan.style, { flex: '1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
 
     const chevron = document.createElement('span');
@@ -209,7 +217,7 @@ const entrada2 = "/renders/montaje-distancia-corta.webp";
     menuWrapper.addEventListener('click', (e) => e.stopPropagation());
 
     // Marcar cocina como activa por defecto
-    actualizarMenu('entrada1');
+    actualizarMenu('plaza');
     crearLoader(); // <-- agregar aquí
   };
 
@@ -295,7 +303,7 @@ const ocultarLoader = () => {
 
       visor = pannellum.viewer('panorama', {
         "default": {
-          "firstScene": "entrada1",
+          "firstScene": "plaza",
           "sceneFadeDuration": 1000,
           "autoLoad": true,
           "showControls": true,
@@ -358,8 +366,28 @@ const ocultarLoader = () => {
             "type": "equirectangular",
             "panorama": coworking,
             "hotSpots": []
+          },
+          "plaza": {
+            "type": "equirectangular",
+            "panorama": plaza,
+            "hotSpots": []
+          },
+          "oficina": {
+            "type": "equirectangular",
+            "panorama": oficina,
+            "hotSpots": []
+          },
+          "areabbq": {
+            "type": "equirectangular",
+            "panorama": areabbq,
+            "hotSpots": []
+          },
+          "culturearea": {
+            "type": "equirectangular",
+            "panorama": culturearea,
+            "hotSpots": []
+          }
         }
-      }
       });
 
       visor.on('scenechange', (escenaId) => {
