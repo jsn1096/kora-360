@@ -216,7 +216,7 @@ const culturearea = "/renders/360-culture-area.webp";
     menuWrapper.addEventListener('click', (e) => e.stopPropagation());
 
     // Marcar cocina como activa por defecto
-    actualizarMenu('plaza');
+    actualizarMenu('entrada1');
     crearLoader(); // <-- agregar aquí
   };
 
@@ -302,7 +302,7 @@ const ocultarLoader = () => {
 
       visor = pannellum.viewer('panorama', {
         "default": {
-          "firstScene": "plaza",
+          "firstScene": "entrada1",
           "sceneFadeDuration": 1000,
           "autoLoad": true,
           "showControls": true,
