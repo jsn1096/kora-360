@@ -1,10 +1,7 @@
 ---
 const {estudio} = Astro.props;
-// Visor360.astro
 const imagenEstudio = `/renders/${estudio}-360.webp`; 
-// const imagenCocina = "/renders/360-cocina.webp";
-// const imagenGym = "/renders/360-gym.webp";
-// const imagenJacuzzi = "/renders/jacuzzi-360.webp";
+const imagenBano = `/renders/baño6-ps.webp`; // <-- Modifica este nombre/ruta según tus imágenes
 ---
 
 <div id="panorama-wrapper" style="width: 100%; height: 100vh; position: relative; background-color: #2c2c2c;">
@@ -52,13 +49,15 @@ const imagenEstudio = `/renders/${estudio}-360.webp`;
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
 <script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
-<script define:vars={{ imagenEstudio, estudio }}>
+<script define:vars={{ imagenEstudio, imagenBano, estudio }}>
   let visor = null;
 
   // Inyectar el menú con estilos 100% inline (no depende de clases externas)
   const crearMenu = () => {
+    // Agregamos la opción del Baño en el arreglo de escenas
     const escenas = [
       { id: 'estudio411', label: `Estudio ${estudio}`, icono: '🏠' },
+      { id: 'bano', label: 'Baño', icono: '🚿' }
     ];
 
     const wrapper = document.getElementById('panorama-wrapper');
@@ -159,35 +158,13 @@ const imagenEstudio = `/renders/${estudio}-360.webp`;
           "estudio411": {
             "type": "equirectangular",
             "panorama": imagenEstudio,
-            "hotSpots": [
-              // { "pitch": 0, "yaw": 260, "type": "scene", "sceneId": "sala",  "cssClass": "flecha-animada" },
-              // { "pitch": 0, "yaw": -20, "type": "scene", "sceneId": "gym",   "cssClass": "flecha-animada" }
-            ]
+            "hotSpots": []
           },
-          // "sala": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenSala,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": 15,  "type": "scene", "sceneId": "jacuzzi", "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 110, "type": "scene", "sceneId": "cocina",  "cssClass": "flecha-animada" }
-          //   ]
-          // },
-          // "gym": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenGym,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": -30, "type": "scene", "sceneId": "cocina",  "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 100, "type": "scene", "sceneId": "jacuzzi", "cssClass": "flecha-animada" }
-          //   ]
-          // },
-          // "jacuzzi": {
-          //   "type": "equirectangular",
-          //   "panorama": imagenJacuzzi,
-          //   "hotSpots": [
-          //     { "pitch": 0, "yaw": -50, "type": "scene", "sceneId": "sala", "cssClass": "flecha-animada" },
-          //     { "pitch": 0, "yaw": 230, "type": "scene", "sceneId": "gym",  "cssClass": "flecha-animada" }
-          //   ]
-          // }
+          "bano": {
+            "type": "equirectangular",
+            "panorama": imagenBano,
+            "hotSpots": []
+          }
         }
       });
 

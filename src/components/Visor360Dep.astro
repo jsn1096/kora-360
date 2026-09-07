@@ -50,87 +50,185 @@ const { dep, config } = Astro.props;
 <script define:vars={{ config, dep }}>
   let visor = null;
 
-  // Inyectar el menú dinámico para navegar entre las habitaciones del departamento actual
+  // Función para asignar ícono según el tipo/ID de escena
+  const obtenerIcono = (sceneId) => {
+    if (sceneId.includes('bano')) return '🚿';
+    if (sceneId.includes('cuarto')) return '🛏️';
+    return '🏠';
+  };
+
   const crearMenu = () => {
     if (document.getElementById('menu-escenas')) return;
 
     const wrapper = document.getElementById('panorama-wrapper');
+    const esMovil = window.innerWidth < 640;
     const menu = document.createElement('div');
     menu.id = 'menu-escenas';
-    Object.assign(menu.style, {
-      position: 'absolute',
-      top: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: '200',
-      display: 'flex',
-      gap: '6px',
-      background: 'rgba(0,0,0,0.55)',
-      border: '1px solid rgba(255,255,255,0.2)',
-      borderRadius: '40px',
-      padding: '6px 10px',
-    });
 
-    // Generar botones según las escenas del objeto config
-    Object.keys(config.scenes).forEach((sceneId) => {
-      const escena = config.scenes[sceneId];
-      const btn = document.createElement('button');
-      btn.dataset.escena = sceneId;
-      btn.innerHTML = `<span style="font-size:14px">📍</span> ${escena.title || sceneId}`;
+    if (esMovil) {
+      // Estilos Menú Desplegable (Móvil)
+      Object.assign(menu.style, {
+        position: 'absolute',
+        top: '16px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: '9999',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        background: 'rgba(0,0,0,0.75)',
+        border: '1px solid rgba(255,255,255,0.25)',
+        borderRadius: '20px',
+        padding: '6px',
+        width: 'max-content',
+        backdropFilter: 'blur(8px)',
+      });
 
-      const estilosBase = {
+      const firstSceneObj = config.scenes[config.firstScene];
+      const btnTrigger = document.createElement('button');
+      btnTrigger.id = 'btn-trigger-360';
+      btnTrigger.innerHTML = `<span id="label-activo">${obtenerIcono(config.firstScene)} ${firstSceneObj?.title || config.firstScene}</span> <span style="font-size:10px; margin-left:6px;">▼</span>`;
+      
+      Object.assign(btnTrigger.style, {
         background: 'transparent',
-        border: '1px solid rgba(255,255,255,0.35)',
-        color: 'rgba(255,255,255,0.85)',
-        borderRadius: '30px',
-        padding: '6px 16px',
+        border: 'none',
+        color: '#fff',
         fontSize: '13px',
         fontFamily: 'system-ui, sans-serif',
+        padding: '6px 12px',
         cursor: 'pointer',
+      });
+
+      const listOpts = document.createElement('div');
+      listOpts.id = 'lista-opciones-360';
+      Object.assign(listOpts.style, {
+        display: 'none',
+        flexDirection: 'column',
+        gap: '4px',
+        width: '100%',
+        marginTop: '6px',
+        borderTop: '1px solid rgba(255,255,255,0.15)',
+        paddingTop: '6px',
+      });
+
+      Object.keys(config.scenes).forEach((sceneId) => {
+        const escena = config.scenes[sceneId];
+        const btn = document.createElement('button');
+        btn.dataset.escena = sceneId;
+        btn.innerHTML = `<span style="font-size:14px">${obtenerIcono(sceneId)}</span> ${escena.title || sceneId}`;
+        
+        Object.assign(btn.style, {
+          background: 'transparent',
+          border: 'none',
+          color: 'rgba(255,255,255,0.85)',
+          borderRadius: '10px',
+          padding: '8px 12px',
+          fontSize: '13px',
+          fontFamily: 'system-ui, sans-serif',
+          cursor: 'pointer',
+          textAlign: 'left',
+          width: '100%',
+        });
+
+        btn.addEventListener('click', () => {
+          if (visor) {
+            visor.loadScene(sceneId);
+            actualizarMenuActivo(sceneId);
+          }
+          listOpts.style.display = 'none';
+        });
+
+        listOpts.appendChild(btn);
+      });
+
+      btnTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const estaAbierto = listOpts.style.display === 'flex';
+        listOpts.style.display = estaAbierto ? 'none' : 'flex';
+      });
+
+      document.addEventListener('click', () => {
+        listOpts.style.display = 'none';
+      });
+
+      menu.appendChild(btnTrigger);
+      menu.appendChild(listOpts);
+
+    } else {
+      // Estilos Horizontales (Escritorio)
+      Object.assign(menu.style, {
+        position: 'absolute',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: '9999',
         display: 'flex',
-        alignItems: 'center',
         gap: '6px',
-        whiteSpace: 'nowrap',
-        transition: 'background 0.2s, color 0.2s',
-      };
-
-      Object.assign(btn.style, estilosBase);
-
-      btn.addEventListener('mouseenter', () => {
-        if (!btn.classList.contains('activo')) {
-          btn.style.background = 'rgba(255,255,255,0.15)';
-          btn.style.color = '#fff';
-        }
-      });
-      btn.addEventListener('mouseleave', () => {
-        if (!btn.classList.contains('activo')) {
-          btn.style.background = 'transparent';
-          btn.style.color = 'rgba(255,255,255,0.85)';
-        }
+        background: 'rgba(0,0,0,0.55)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        borderRadius: '40px',
+        padding: '6px 10px',
       });
 
-      btn.addEventListener('click', () => {
-        if (visor) {
-          visor.loadScene(sceneId);
-          actualizarMenuActivo(sceneId);
-        }
-      });
+      Object.keys(config.scenes).forEach((sceneId) => {
+        const escena = config.scenes[sceneId];
+        const btn = document.createElement('button');
+        btn.dataset.escena = sceneId;
+        btn.innerHTML = `<span style="font-size:14px">${obtenerIcono(sceneId)}</span> ${escena.title || sceneId}`;
 
-      menu.appendChild(btn);
-    });
+        Object.assign(btn.style, {
+          background: 'transparent',
+          border: '1px solid rgba(255,255,255,0.35)',
+          color: 'rgba(255,255,255,0.85)',
+          borderRadius: '30px',
+          padding: '6px 16px',
+          fontSize: '13px',
+          fontFamily: 'system-ui, sans-serif',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          whiteSpace: 'nowrap',
+          transition: 'background 0.2s, color 0.2s',
+        });
+
+        btn.addEventListener('click', () => {
+          if (visor) {
+            visor.loadScene(sceneId);
+            actualizarMenuActivo(sceneId);
+          }
+        });
+
+        menu.appendChild(btn);
+      });
+    }
 
     wrapper.appendChild(menu);
     actualizarMenuActivo(config.firstScene);
   };
 
   const actualizarMenuActivo = (escenaId) => {
-    document.querySelectorAll('#menu-escenas button').forEach(btn => {
+    const escenaObj = config.scenes[escenaId];
+    const labelActivo = document.getElementById('label-activo');
+    
+    if (labelActivo && escenaObj) {
+      labelActivo.innerHTML = `${obtenerIcono(escenaId)} ${escenaObj.title || escenaId}`;
+    }
+
+    document.querySelectorAll('#menu-escenas button[data-escena]').forEach(btn => {
       const esActivo = btn.dataset.escena === escenaId;
       btn.classList.toggle('activo', esActivo);
-      Object.assign(btn.style, esActivo
-        ? { background: 'rgba(255,255,255,0.92)', color: '#1a1a1a', border: '1px solid transparent', fontWeight: '600' }
-        : { background: 'transparent', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.35)', fontWeight: '400' }
-      );
+
+      if (window.innerWidth < 640) {
+        btn.style.background = esActivo ? 'rgba(255,255,255,0.2)' : 'transparent';
+        btn.style.color = esActivo ? '#fff' : 'rgba(255,255,255,0.85)';
+        btn.style.fontWeight = esActivo ? '600' : '400';
+      } else {
+        Object.assign(btn.style, esActivo
+          ? { background: 'rgba(255,255,255,0.92)', color: '#1a1a1a', border: '1px solid transparent', fontWeight: '600' }
+          : { background: 'transparent', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.35)', fontWeight: '400' }
+        );
+      }
     });
   };
 
@@ -140,7 +238,6 @@ const { dep, config } = Astro.props;
 
       if (visor) return;
 
-      // Configuración de Pannellum usando el objeto config inyectado
       const pannellumScenes = {};
       Object.keys(config.scenes).forEach((sceneId) => {
         const item = config.scenes[sceneId];
