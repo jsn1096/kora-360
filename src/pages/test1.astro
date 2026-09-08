@@ -1,16 +1,28 @@
 ---
-import Visor360 from '../components/Visor360.astro';
-import Visor360FrameGuiado from '../components/Visor360FrameGuiado.astro';
-import Visor360GuiadoCube from '../components/Visor360GuiadoCube.astro';
 import Visor360GuiadoCubeVideo from '../components/Visor360GuiadoCubeVideo.astro';
-import Layout from '../layouts/Layout.astro';
-
 ---
-<Layout>
-	<main>
-		<!-- <Visor360 /> -->
-		<!-- <Visor360FrameGuiado /> -->
-		<!-- <Visor360GuiadoCube /> -->
-		<Visor360GuiadoCubeVideo />
-	</main>
-</Layout>
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visor 360</title>
+  </head>
+  <body>
+    <main>
+      <Visor360GuiadoCubeVideo />
+    </main>
+  </body>
+</html>
+
+<style>
+  html,
+  body,
+  main {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+  }
+</style>

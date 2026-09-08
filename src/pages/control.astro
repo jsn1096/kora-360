@@ -1,167 +1,379 @@
 ---
-// src/pages/control.astro
 const secciones = [
   {
-    id: "terraza",
-    label: "Terraza",
-    emoji: "☀️",
-    escenas: ["cocina", "sala", "gym", "jacuzzi"],
-    videos: []
+    id: "estudios",
+    label: "Estudios",
+    descripcion: "Unidades tipo estudio",
+    emoji: "⌂",
+    escenas: [
+      { id: "estudio404", label: "Estudio 404", detalle: "Vista principal" },
+      { id: "estudio409", label: "Estudio 409", detalle: "Vista principal" },
+      { id: "estudio411", label: "Estudio 411", detalle: "Vista principal" },
+      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    ],
   },
   {
     id: "suites",
     label: "Suites",
-    emoji: "🛏️",
-    escenas: ["estudio411", "departamento610", "cuarto1610", "cuarto2610", "estudio404", "suite606", "cuarto606", "suite607",  "cuarto607", "departamento605", "cuarto1-605", "cuarto2-605",],
-    videos: []
+    descripcion: "Suites y habitaciones",
+    emoji: "▱",
+    escenas: [
+      { id: "suite606", label: "Suite 606", detalle: "Vista principal" },
+      { id: "cuarto606", label: "Habitación 606", detalle: "Habitación" },
+      { id: "suite607", label: "Suite 607", detalle: "Vista principal" },
+      { id: "cuarto607", label: "Habitación 607", detalle: "Habitación" },
+      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    ],
+  },
+  {
+    id: "departamentos",
+    label: "Departamentos",
+    descripcion: "Departamentos y habitaciones",
+    emoji: "□",
+    escenas: [
+      { id: "departamento610", label: "Departamento 610", detalle: "Vista principal" },
+      { id: "cuarto1610", label: "Habitación 1 · 610", detalle: "Habitación" },
+      { id: "cuarto2610", label: "Habitación 2 · 610", detalle: "Habitación" },
+      { id: "departamento605", label: "Departamento 605", detalle: "Vista principal" },
+      { id: "cuarto1-605", label: "Habitación 1 · 605", detalle: "Habitación" },
+      { id: "cuarto2-605", label: "Habitación 2 · 605", detalle: "Habitación" },
+      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    ],
   },
   {
     id: "areas-sociales",
-    label: "Áreas Sociales",
-    emoji: "🏊️",
-    escenas: ["contentarea", "entrada1", "entrada2", "lobby", "coworking"],
-    videos: ["tour_lobby"]
+    label: "Áreas sociales",
+    descripcion: "Espacios comunes del proyecto",
+    emoji: "✦",
+    escenas: [
+      { id: "entrada1", label: "Vista San Ignacio", detalle: "Acceso" },
+      { id: "entrada2", label: "Plaza comercial", detalle: "Acceso" },
+      { id: "lobby", label: "Lobby", detalle: "Área social" },
+      { id: "contentarea", label: "Content Area", detalle: "Área social" },
+      { id: "coworking", label: "Coworking", detalle: "Área social" },
+      { id: "oficina", label: "Oficina", detalle: "Área social" },
+      { id: "tour_lobby", label: "Video concepto", detalle: "Video 360", tipo: "video" },
+    ],
+  },
+  {
+    id: "terraza",
+    label: "Terraza",
+    descripcion: "Amenidades y terraza",
+    emoji: "△",
+    escenas: [
+      { id: "cocina", label: "Cocina abierta", detalle: "Amenidad" },
+      { id: "sala", label: "Sala comunal", detalle: "Amenidad" },
+      { id: "gym", label: "Gym", detalle: "Amenidad" },
+      { id: "jacuzzi", label: "Jacuzzi", detalle: "Amenidad" },
+      { id: "culturearea", label: "Culture Area", detalle: "Amenidad" },
+      { id: "areabbq", label: "Área BBQ", detalle: "Amenidad" },
+    ],
   },
 ];
 ---
 
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Control — Panel</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0f0e" />
+    <title>Control · Kora 360</title>
+  </head>
+  <body>
+    <main class="panel">
+      <header class="encabezado">
+        <div>
+          <p class="eyebrow">KORA / 360</p>
+          <h1>Control remoto</h1>
+          <p class="subtitulo">Selecciona lo que quieres mostrar en el visor.</p>
+        </div>
+        <div id="estado-conexion" class="estado estado--conectando" aria-live="polite">
+          <span class="estado-punto"></span>
+          <span id="estado-texto">Conectando</span>
+        </div>
+      </header>
 
-<div id="app">
-  <header>
-    <h1>🎮 Panel de Control</h1>
-    <div id="estado-conexion" class="dot desconectado"></div>
-  </header>
+      <section class="escena-actual" aria-live="polite">
+        <div class="actual-kicker">MOSTRANDO AHORA</div>
+        <div class="actual-contenido">
+          <span id="actual-icono" class="actual-icono">•</span>
+          <div>
+            <strong id="escena-actual">Esperando visor</strong>
+            <span id="tipo-actual">Sala demo</span>
+          </div>
+        </div>
+      </section>
 
-  <div id="secciones">
-{secciones.map(sec => (
-  <div class="seccion">
-    <h2>{sec.emoji} {sec.label}</h2>
+      <label class="buscador">
+        <span aria-hidden="true">⌕</span>
+        <input id="buscar" type="search" placeholder="Buscar una escena" autocomplete="off" />
+      </label>
 
-    <div class="escenas">
-      {sec.escenas.map(escena => (
-        <button class="btn-escena" data-escena={escena} data-tipo="escena" data-seccion={sec.id}>
-          {escena}
-        </button>
-      ))}
-
-      {/* 👇 Botones de video con icono distintivo */}
-      {sec.videos.map(video => (
-        <button class="btn-escena btn-video" data-escena={video} data-tipo="video" data-seccion={sec.id}>
-          🎬 {video}
-        </button>
-      ))}
-    </div>
-  </div>
-))}
-  </div>
-
-  <div id="actual">
-    <p>Mostrando ahora:</p>
-    <strong id="escena-actual">—</strong>
-  </div>
-</div>
+      <div id="secciones" class="secciones">
+        {secciones.map((sec, index) => (
+          <details class="seccion" data-seccion={sec.id} open={index === 0}>
+            <summary>
+              <span class="seccion-icono">{sec.emoji}</span>
+              <span class="seccion-titulos">
+                <strong>{sec.label}</strong>
+                <small>{sec.descripcion}</small>
+              </span>
+              <span class="seccion-cantidad">{sec.escenas.length}</span>
+              <span class="seccion-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="escenas">
+              {sec.escenas.map((escena) => (
+                <button
+                  type="button"
+                  class:list={["btn-escena", escena.tipo === "video" && "btn-video"]}
+                  data-escena={escena.id}
+                  data-tipo={escena.tipo || "escena"}
+                  data-seccion={sec.id}
+                  data-label={escena.label}
+                  data-detalle={escena.detalle}
+                >
+                  <span class="btn-icono">{escena.tipo === "video" ? "▶" : "→"}</span>
+                  <span class="btn-textos">
+                    <strong>{escena.label}</strong>
+                    <small>{escena.detalle}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    </main>
+  </body>
+</html>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    color-scheme: dark;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0b0f0e;
+    color: #f2f4ef;
+  }
+
+  * { box-sizing: border-box; }
 
   body {
-    background: #0f0f0f;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    min-width: 320px;
     min-height: 100vh;
-    padding: 20px;
+    background:
+      radial-gradient(circle at 90% -10%, rgba(112, 143, 93, 0.18), transparent 34rem),
+      #0b0f0e;
   }
 
-  header {
+  button, input { font: inherit; }
+
+  .panel {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    padding: max(24px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));
+  }
+
+  .encabezado {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 2px 24px;
+  }
+
+  .eyebrow {
+    margin: 0 0 8px;
+    color: #a9bd91;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(27px, 8vw, 38px);
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  .subtitulo {
+    margin: 10px 0 0;
+    color: #919b94;
+    font-size: 13px;
+  }
+
+  .estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    color: #aab2ac;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .estado-punto {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e0a55d;
+  }
+
+  .estado--conectado { color: #bcd9aa; border-color: rgba(137, 181, 112, 0.25); }
+  .estado--conectado .estado-punto { background: #8fc277; box-shadow: 0 0 10px rgba(143, 194, 119, 0.8); }
+  .estado--error { color: #e9a19b; border-color: rgba(214, 103, 93, 0.25); }
+  .estado--error .estado-punto { background: #dc6e65; }
+
+  .escena-actual {
+    margin-bottom: 14px;
+    padding: 17px 18px;
+    border: 1px solid rgba(178, 203, 157, 0.22);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(117, 151, 96, 0.2), rgba(255,255,255,0.035));
+  }
+
+  .actual-kicker {
+    margin-bottom: 10px;
+    color: #9eb98a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+
+  .actual-contenido { display: flex; align-items: center; gap: 12px; }
+  .actual-icono {
+    display: grid;
+    width: 37px;
+    height: 37px;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(177, 207, 152, 0.16);
+    color: #c2dda9;
+    font-size: 22px;
+  }
+  #escena-actual { display: block; font-size: 17px; }
+  #tipo-actual { display: block; margin-top: 3px; color: #9ba69d; font-size: 12px; }
+
+  .buscador {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: 9px;
+    margin-bottom: 14px;
+    padding: 0 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 13px;
+    background: rgba(255,255,255,0.045);
+    color: #9ba69d;
   }
-
-  h1 { font-size: 22px; }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-  .dot.conectado    { background: #10B981; box-shadow: 0 0 8px #10B981; }
-  .dot.desconectado { background: #EF4444; }
-
-  #secciones {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-
-  .seccion h2 {
+  .buscador span { font-size: 22px; line-height: 1; }
+  .buscador input {
+    width: 100%;
+    padding: 13px 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f2f4ef;
     font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,0.4);
-    margin-bottom: 12px;
   }
+  .buscador input::placeholder { color: #778078; }
+
+  .secciones { display: grid; gap: 10px; }
+  .seccion {
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.085);
+    border-radius: 17px;
+    background: rgba(255,255,255,0.035);
+  }
+  .seccion[hidden] { display: none; }
+  .seccion summary {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 68px;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .seccion summary::-webkit-details-marker { display: none; }
+  .seccion-icono {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.07);
+    color: #bdd59f;
+    font-size: 21px;
+  }
+  .seccion-titulos { display: grid; flex: 1; gap: 3px; }
+  .seccion-titulos strong { font-size: 15px; }
+  .seccion-titulos small { color: #818c84; font-size: 11px; }
+  .seccion-cantidad {
+    display: grid;
+    min-width: 22px;
+    height: 22px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.07);
+    color: #9fa9a0;
+    font-size: 11px;
+  }
+  .seccion-chevron { color: #829087; font-size: 18px; transition: transform 0.2s; }
+  .seccion[open] .seccion-chevron { transform: rotate(180deg); }
 
   .escenas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 10px 10px;
   }
-
   .btn-escena {
-    padding: 14px 20px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.07);
-    color: white;
-    font-size: 15px;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 62px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 13px;
+    background: rgba(255,255,255,0.045);
+    color: #dce2db;
+    text-align: left;
     cursor: pointer;
-    text-transform: capitalize;
-    transition: all 0.15s;
+    touch-action: manipulation;
+    transition: transform 0.15s, background 0.15s, border-color 0.15s;
   }
-
-  .btn-escena:hover  { background: rgba(255,255,255,0.15); }
-
-  .btn-escena.activo {
-    background: #6366F1;
-    border-color: #6366F1;
-    font-weight: 700;
+  .btn-escena:active { transform: scale(0.98); }
+  .btn-escena:hover { border-color: rgba(183, 211, 157, 0.35); background: rgba(183, 211, 157, 0.1); }
+  .btn-escena.activo { border-color: #9fca82; background: rgba(135, 178, 103, 0.2); }
+  .btn-video { border-color: rgba(222, 172, 93, 0.24); }
+  .btn-video:hover { border-color: rgba(222, 172, 93, 0.6); background: rgba(222, 172, 93, 0.12); }
+  .btn-video.activo { border-color: #e0ae60; background: rgba(222, 172, 93, 0.2); }
+  .btn-icono {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.07);
+    color: #adc896;
+    font-size: 16px;
   }
+  .btn-video .btn-icono { color: #e0ae60; }
+  .btn-textos { min-width: 0; margin-left: 8px; }
+  .btn-textos strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-textos small { display: block; margin-top: 4px; overflow: hidden; color: #7e8980; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 
-  .btn-video {
-  border-color: rgba(251, 191, 36, 0.4);  /* amarillo sutil */
-  color: #FCD34D;
-}
-
-.btn-video:hover {
-  background: rgba(251, 191, 36, 0.15);
-}
-
-.btn-video.activo {
-  background: #D97706;
-  border-color: #D97706;
-  color: white;
-}
-
-  #actual {
-    margin-top: 40px;
-    padding: 20px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    text-align: center;
+  @media (min-width: 600px) {
+    .panel { padding: 42px 24px; }
+    .encabezado { padding-bottom: 30px; }
+    .escenas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-
-  #actual p  { color: rgba(255,255,255,0.4); font-size: 12px; margin-bottom: 6px; }
-  #actual strong { font-size: 22px; text-transform: capitalize; }
 </style>
 
 <script>
@@ -172,46 +384,77 @@ const secciones = [
     room: "sala-demo",
   });
 
-  const dotEstado    = document.getElementById("estado-conexion") as HTMLElement;
-  const escenaActual = document.getElementById("escena-actual") as HTMLElement;
+  const estadoConexion = document.getElementById("estado-conexion");
+  const estadoTexto = document.getElementById("estado-texto");
+  const escenaActual = document.getElementById("escena-actual");
+  const tipoActual = document.getElementById("tipo-actual");
+  const actualIcono = document.getElementById("actual-icono");
+  const botones = [...document.querySelectorAll(".btn-escena")];
 
-  socket.addEventListener("open", () => {
-    dotEstado.className = "dot conectado";
+  const cambiarEstado = (estado, texto) => {
+    estadoConexion.className = `estado estado--${estado}`;
+    estadoTexto.textContent = texto;
+  };
+
+  const mostrarEscena = (data) => {
+    const boton = botones.find((item) =>
+      item.dataset.escena === data.escena &&
+      (!data.seccion || item.dataset.seccion === data.seccion),
+    ) || botones.find((item) => item.dataset.escena === data.escena);
+    if (!boton) return;
+
+    botones.forEach((item) => item.classList.toggle("activo", item === boton));
+    escenaActual.textContent = boton.dataset.label;
+    tipoActual.textContent = data.type === "cambiar-video" ? "Video 360" : boton.dataset.detalle;
+    actualIcono.textContent = data.type === "cambiar-video" ? "▶" : "→";
+  };
+
+  socket.addEventListener("open", () => cambiarEstado("conectado", "Conectado"));
+  socket.addEventListener("close", () => cambiarEstado("error", "Sin conexión"));
+  socket.addEventListener("error", () => cambiarEstado("error", "Error de conexión"));
+
+  socket.addEventListener("message", (event) => {
+    try {
+      mostrarEscena(JSON.parse(event.data));
+    } catch {
+      cambiarEstado("error", "Mensaje inválido");
+    }
   });
 
-  socket.addEventListener("close", () => {
-    dotEstado.className = "dot desconectado";
-  });
+  botones.forEach((boton) => {
+    boton.addEventListener("click", () => {
+      if (socket.readyState !== 1) {
+        cambiarEstado("error", "Sin conexión");
+        return;
+      }
 
-// Escuchar mensajes entrantes (ambos tipos)
-socket.addEventListener("message", (e) => {
-  const data = JSON.parse(e.data);
+      const tipo = boton.dataset.tipo === "video" ? "cambiar-video" : "cambiar-escena";
+      const data = {
+        type: tipo,
+        escena: boton.dataset.escena,
+        seccion: boton.dataset.seccion,
+      };
 
-  if (data.type === "cambiar-escena" || data.type === "cambiar-video") {
-    const icono = data.type === "cambiar-video" ? "🎬 " : "";
-    escenaActual.textContent = icono + data.escena;
-
-    document.querySelectorAll(".btn-escena").forEach((btn) => {
-      const el = btn as HTMLElement;
-      el.classList.toggle("activo", el.dataset.escena === data.escena);
+      mostrarEscena(data);
+      socket.send(JSON.stringify(data));
     });
-  }
-});
-
-// Enviar al hacer click — detecta tipo automáticamente
-document.querySelectorAll(".btn-escena").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const el = btn as HTMLElement;
-    const tipo = el.dataset.tipo; // "escena" o "video"
-
-    socket.send(JSON.stringify({
-      type: tipo === "video" ? "cambiar-video" : "cambiar-escena",
-      escena: el.dataset.escena,   // reutilizamos el mismo campo
-      seccion: el.dataset.seccion,
-    }));
   });
-});
-</script>
 
-</body>
-</html>
+  document.getElementById("buscar").addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLocaleLowerCase();
+
+    document.querySelectorAll(".seccion").forEach((seccion) => {
+      const items = [...seccion.querySelectorAll(".btn-escena")];
+      let visibles = 0;
+
+      items.forEach((item) => {
+        const coincide = !query || `${item.dataset.label} ${item.dataset.detalle}`.toLocaleLowerCase().includes(query);
+        item.hidden = !coincide;
+        if (coincide) visibles += 1;
+      });
+
+      seccion.hidden = visibles === 0;
+      if (query && visibles > 0) seccion.open = true;
+    });
+  });
+</script>

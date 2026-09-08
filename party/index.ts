@@ -2,17 +2,27 @@
 import type * as Party from "partykit/server";
 
 export default class ControlRoom implements Party.Server {
-  escenaActual: string = "cocina";
+  estadoActual = JSON.stringify({
+    type: "cambiar-escena",
+    escena: "entrada1",
+    seccion: "areas-sociales",
+  });
 
   constructor(readonly room: Party.Room) {}
 
   // Cuando alguien manda un mensaje (el controlador)
   onMessage(message: string, sender: Party.Connection) {
-    const data = JSON.parse(message);
+    let data: { type?: string };
 
-    // Guardar estado actual
-    if (data.type === "cambiar-escena") {
-      this.escenaActual = data.escena;
+    try {
+      data = JSON.parse(message);
+    } catch {
+      return;
+    }
+
+    // Guardar el último estado para que un visor recién conectado se sincronice.
+    if (data.type === "cambiar-escena" || data.type === "cambiar-video") {
+      this.estadoActual = message;
     }
 
     // Retransmitir a TODOS (incluyendo la Vista)
@@ -21,9 +31,6 @@ export default class ControlRoom implements Party.Server {
 
   // Cuando la Vista se conecta, enviarle el estado actual
   onConnect(conn: Party.Connection) {
-    conn.send(JSON.stringify({
-      type: "cambiar-escena",
-      escena: this.escenaActual
-    }));
+    conn.send(this.estadoActual);
   }
 }
