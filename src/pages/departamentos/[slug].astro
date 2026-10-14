@@ -1,6 +1,8 @@
 ---
 import Visor360Dep from '../../components/Visor360Dep.astro';
+import FichaTecnica from '../../components/FichaTecnica.astro';
 import Layout from '../../layouts/Layout.astro';
+import { fichaTecnicaHabilitada, fichasUnidades } from '../../data/fichasUnidades';
 
 export async function getStaticPaths() {
   return [
@@ -12,6 +14,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
+const ficha = fichasUnidades[`departamento-${slug}`];
 
 const departamentosData = {
   "610": {
@@ -156,5 +159,6 @@ if (!datosDep) {
 <Layout title={`Departamento ${slug}`}>
   <main>
     <Visor360Dep dep={slug} config={datosDep} />
+    {fichaTecnicaHabilitada && ficha && <FichaTecnica ficha={ficha} />}
   </main>
 </Layout>

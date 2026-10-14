@@ -1,6 +1,8 @@
 ---
 import Visor360Estudios from '../../components/Visor360Estudios.astro';
+import FichaTecnica from '../../components/FichaTecnica.astro';
 import Layout from '../../layouts/Layout.astro';
+import { fichaTecnicaHabilitada, fichasUnidades } from '../../data/fichasUnidades';
 
 export async function getStaticPaths() {
     return [
@@ -11,10 +13,12 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params; // Extraemos el slug de la URL
+const ficha = fichasUnidades[`estudio-${slug}`];
 ---
 <Layout title=`Estudio ${slug}`>
 	<main>
 		<Visor360Estudios estudio={slug} />
+		{fichaTecnicaHabilitada && ficha && <FichaTecnica ficha={ficha} />}
 		<!-- <Visor360AFrame /> -->
 	</main>
 </Layout>
