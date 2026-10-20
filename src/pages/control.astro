@@ -5,11 +5,15 @@ const secciones = [
     label: "Estudios",
     descripcion: "Unidades tipo estudio",
     emoji: "⌂",
-    escenas: [
-      { id: "estudio404", label: "Estudio 404", detalle: "Vista principal" },
-      { id: "estudio409", label: "Estudio 409", detalle: "Vista principal" },
-      { id: "estudio411", label: "Estudio 411", detalle: "Vista principal" },
-      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    grupos: [
+      {
+        escenas: [
+          { id: "estudio404", label: "Estudio 404", detalle: "Vista principal" },
+          { id: "estudio409", label: "Estudio 409", detalle: "Vista principal" },
+          { id: "estudio411", label: "Estudio 411", detalle: "Vista principal" },
+          { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+        ],
+      },
     ],
   },
   {
@@ -17,12 +21,31 @@ const secciones = [
     label: "Suites",
     descripcion: "Suites y habitaciones",
     emoji: "▱",
-    escenas: [
-      { id: "suite606", label: "Suite 606", detalle: "Vista principal" },
-      { id: "cuarto606", label: "Habitación 606", detalle: "Habitación" },
-      { id: "suite607", label: "Suite 607", detalle: "Vista principal" },
-      { id: "cuarto607", label: "Habitación 607", detalle: "Habitación" },
-      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    grupos: [
+      {
+        eyebrow: "Suite",
+        titulo: "606",
+        escenas: [
+          { id: "suite606", label: "Vista principal", detalle: "Suite 606" },
+          { id: "cuarto606", label: "Habitación", detalle: "Suite 606" },
+        ],
+      },
+      {
+        eyebrow: "Suite",
+        titulo: "607",
+        escenas: [
+          { id: "suite607", label: "Vista principal", detalle: "Suite 607" },
+          { id: "cuarto607", label: "Habitación", detalle: "Suite 607" },
+        ],
+      },
+      {
+        eyebrow: "Uso general",
+        titulo: "Escena compartida",
+        compartido: true,
+        escenas: [
+          { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+        ],
+      },
     ],
   },
   {
@@ -30,20 +53,53 @@ const secciones = [
     label: "Departamentos",
     descripcion: "Departamentos y habitaciones",
     emoji: "□",
-    escenas: [
-      { id: "departamento510", label: "Departamento 510", detalle: "Vista principal" },
-      { id: "cuarto1-510", label: "Habitación 1 · 510", detalle: "Habitación" },
-      { id: "cuarto2-510", label: "Habitación 2 · 510", detalle: "Habitación" },
-      { id: "departamento511", label: "Departamento 511", detalle: "Vista principal" },
-      { id: "cuarto1-511", label: "Habitación 1 · 511", detalle: "Habitación" },
-      { id: "cuarto2-511", label: "Habitación 2 · 511", detalle: "Habitación" },
-      { id: "departamento605", label: "Departamento 605", detalle: "Vista principal" },
-      { id: "cuarto1-605", label: "Habitación 1 · 605", detalle: "Habitación" },
-      { id: "cuarto2-605", label: "Habitación 2 · 605", detalle: "Habitación" },
-      { id: "departamento610", label: "Departamento 610", detalle: "Vista principal" },
-      { id: "cuarto1610", label: "Habitación 1 · 610", detalle: "Habitación" },
-      { id: "cuarto2610", label: "Habitación 2 · 610", detalle: "Habitación" },
-      { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+    grupos: [
+      {
+        eyebrow: "Departamento",
+        titulo: "510",
+        escenas: [
+          { id: "departamento510", label: "Vista principal", detalle: "Departamento 510" },
+          { id: "cuarto1-510", label: "Habitación 1", detalle: "Departamento 510" },
+          { id: "cuarto2-510", label: "Habitación 2", detalle: "Departamento 510" },
+          { id: "closet-cuarto2-510", label: "Closet Habitación 2", detalle: "Departamento 510" },
+          { id: "cine-510", label: "Cine/Estudio", detalle: "Departamento 510" },
+        ],
+      },
+      {
+        eyebrow: "Departamento",
+        titulo: "511",
+        escenas: [
+          { id: "departamento511", label: "Vista principal", detalle: "Departamento 511" },
+          { id: "cuarto1-511", label: "Habitación 1", detalle: "Departamento 511" },
+          { id: "cuarto2-511", label: "Habitación 2", detalle: "Departamento 511" },
+        ],
+      },
+      {
+        eyebrow: "Departamento",
+        titulo: "605",
+        escenas: [
+          { id: "departamento605", label: "Vista principal", detalle: "Departamento 605" },
+          { id: "cuarto1-605", label: "Habitación 1", detalle: "Departamento 605" },
+          { id: "cuarto2-605", label: "Habitación 2", detalle: "Departamento 605" },
+        ],
+      },
+      {
+        eyebrow: "Departamento",
+        titulo: "610",
+        escenas: [
+          { id: "departamento610", label: "Vista principal", detalle: "Departamento 610" },
+          { id: "cuarto1610", label: "Habitación 1", detalle: "Departamento 610" },
+          { id: "cuarto2610", label: "Habitación 2", detalle: "Departamento 610" },
+        ],
+      },
+      {
+        eyebrow: "Uso general",
+        titulo: "Escena compartida",
+        compartido: true,
+        escenas: [
+          { id: "bano", label: "Baño de referencia", detalle: "Baño" },
+        ],
+      },
     ],
   },
   {
@@ -51,14 +107,18 @@ const secciones = [
     label: "Áreas sociales",
     descripcion: "Espacios comunes del proyecto",
     emoji: "✦",
-    escenas: [
-      { id: "entrada1", label: "Vista San Ignacio", detalle: "Acceso" },
-      { id: "entrada2", label: "Plaza comercial", detalle: "Acceso" },
-      { id: "lobby", label: "Lobby", detalle: "Área social" },
-      { id: "contentarea", label: "Content Area", detalle: "Área social" },
-      { id: "coworking", label: "Coworking", detalle: "Área social" },
-      { id: "oficina", label: "Oficina", detalle: "Área social" },
-      { id: "tour_lobby", label: "Video concepto", detalle: "Video 360", tipo: "video" },
+    grupos: [
+      {
+        escenas: [
+          { id: "entrada1", label: "Vista San Ignacio", detalle: "Acceso" },
+          { id: "entrada2", label: "Plaza comercial", detalle: "Acceso" },
+          { id: "lobby", label: "Lobby", detalle: "Área social" },
+          { id: "contentarea", label: "Content Area", detalle: "Área social" },
+          { id: "coworking", label: "Coworking", detalle: "Área social" },
+          { id: "oficina", label: "Oficina", detalle: "Área social" },
+          { id: "tour_lobby", label: "Video concepto", detalle: "Video 360", tipo: "video" },
+        ],
+      },
     ],
   },
   {
@@ -66,16 +126,23 @@ const secciones = [
     label: "Terraza",
     descripcion: "Amenidades y terraza",
     emoji: "△",
-    escenas: [
-      { id: "cocina", label: "Cocina abierta", detalle: "Amenidad" },
-      { id: "sala", label: "Sala comunal", detalle: "Amenidad" },
-      { id: "gym", label: "Gym", detalle: "Amenidad" },
-      { id: "jacuzzi", label: "Jacuzzi", detalle: "Amenidad" },
-      { id: "culturearea", label: "Culture Area", detalle: "Amenidad" },
-      { id: "areabbq", label: "Área BBQ", detalle: "Amenidad" },
+    grupos: [
+      {
+        escenas: [
+          { id: "cocina", label: "Cocina abierta", detalle: "Amenidad" },
+          { id: "sala", label: "Sala comunal", detalle: "Amenidad" },
+          { id: "gym", label: "Gym", detalle: "Amenidad" },
+          { id: "jacuzzi", label: "Jacuzzi", detalle: "Amenidad" },
+          { id: "culturearea", label: "Culture Area", detalle: "Amenidad" },
+          { id: "areabbq", label: "Área BBQ", detalle: "Amenidad" },
+        ],
+      },
     ],
   },
 ];
+
+const contarEscenas = (grupos) =>
+  grupos.reduce((total, grupo) => total + grupo.escenas.length, 0);
 ---
 
 <html lang="es">
@@ -126,26 +193,45 @@ const secciones = [
                 <strong>{sec.label}</strong>
                 <small>{sec.descripcion}</small>
               </span>
-              <span class="seccion-cantidad">{sec.escenas.length}</span>
+              <span class="seccion-cantidad">{contarEscenas(sec.grupos)}</span>
               <span class="seccion-chevron" aria-hidden="true">⌄</span>
             </summary>
-            <div class="escenas">
-              {sec.escenas.map((escena) => (
-                <button
-                  type="button"
-                  class:list={["btn-escena", escena.tipo === "video" && "btn-video"]}
-                  data-escena={escena.id}
-                  data-tipo={escena.tipo || "escena"}
-                  data-seccion={sec.id}
-                  data-label={escena.label}
-                  data-detalle={escena.detalle}
+            <div class="grupos-unidades">
+              {sec.grupos.map((grupo) => (
+                <section
+                  class:list={[
+                    "grupo-unidad",
+                    !grupo.titulo && "grupo-unidad--simple",
+                    grupo.compartido && "grupo-unidad--compartido",
+                  ]}
+                  data-grupo
                 >
-                  <span class="btn-icono">{escena.tipo === "video" ? "▶" : "→"}</span>
-                  <span class="btn-textos">
-                    <strong>{escena.label}</strong>
-                    <small>{escena.detalle}</small>
-                  </span>
-                </button>
+                  {grupo.titulo && (
+                    <header class="grupo-encabezado">
+                      <span>{grupo.eyebrow}</span>
+                      <strong>{grupo.titulo}</strong>
+                    </header>
+                  )}
+                  <div class="escenas">
+                    {grupo.escenas.map((escena) => (
+                      <button
+                        type="button"
+                        class:list={["btn-escena", escena.tipo === "video" && "btn-video"]}
+                        data-escena={escena.id}
+                        data-tipo={escena.tipo || "escena"}
+                        data-seccion={sec.id}
+                        data-label={escena.label}
+                        data-detalle={escena.detalle}
+                      >
+                        <span class="btn-icono">{escena.tipo === "video" ? "▶" : "→"}</span>
+                        <span class="btn-textos">
+                          <strong>{escena.label}</strong>
+                          <small>{escena.detalle}</small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           </details>
@@ -334,11 +420,74 @@ const secciones = [
   .seccion-chevron { color: #829087; font-size: 18px; transition: transform 0.2s; }
   .seccion[open] .seccion-chevron { transform: rotate(180deg); }
 
+  .grupos-unidades {
+    display: grid;
+    gap: 10px;
+    padding: 0 10px 10px;
+  }
+
+  .grupo-unidad {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 15px;
+    background: rgba(255,255,255,0.035);
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .grupo-unidad[hidden] { display: none; }
+
+  .grupo-unidad--simple {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .grupo-unidad--compartido {
+    border-style: dashed;
+    background: rgba(255,255,255,0.018);
+  }
+
+  .grupo-unidad--activo {
+    border-color: rgba(159, 202, 130, 0.42);
+    background: rgba(135, 178, 103, 0.07);
+  }
+
+  .grupo-encabezado {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 11px;
+    padding: 0 2px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.075);
+  }
+
+  .grupo-encabezado span {
+    color: #8f9a91;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .grupo-encabezado strong {
+    color: #eef2eb;
+    font-size: 19px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+
+  .grupo-unidad--compartido .grupo-encabezado strong {
+    color: #aeb6af;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+
   .escenas {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    padding: 0 10px 10px;
   }
   .btn-escena {
     display: flex;
@@ -412,6 +561,9 @@ const secciones = [
     if (!boton) return;
 
     botones.forEach((item) => item.classList.toggle("activo", item === boton));
+    document.querySelectorAll("[data-grupo]").forEach((grupo) => {
+      grupo.classList.toggle("grupo-unidad--activo", grupo.contains(boton));
+    });
     escenaActual.textContent = boton.dataset.label;
     tipoActual.textContent = data.type === "cambiar-video" ? "Video 360" : boton.dataset.detalle;
     actualIcono.textContent = data.type === "cambiar-video" ? "▶" : "→";
@@ -452,13 +604,21 @@ const secciones = [
     const query = event.target.value.trim().toLocaleLowerCase();
 
     document.querySelectorAll(".seccion").forEach((seccion) => {
-      const items = [...seccion.querySelectorAll(".btn-escena")];
+      const grupos = [...seccion.querySelectorAll("[data-grupo]")];
       let visibles = 0;
 
-      items.forEach((item) => {
-        const coincide = !query || `${item.dataset.label} ${item.dataset.detalle}`.toLocaleLowerCase().includes(query);
-        item.hidden = !coincide;
-        if (coincide) visibles += 1;
+      grupos.forEach((grupo) => {
+        const items = [...grupo.querySelectorAll(".btn-escena")];
+        let visiblesEnGrupo = 0;
+
+        items.forEach((item) => {
+          const coincide = !query || `${item.dataset.label} ${item.dataset.detalle}`.toLocaleLowerCase().includes(query);
+          item.hidden = !coincide;
+          if (coincide) visiblesEnGrupo += 1;
+        });
+
+        grupo.hidden = visiblesEnGrupo === 0;
+        visibles += visiblesEnGrupo;
       });
 
       seccion.hidden = visibles === 0;

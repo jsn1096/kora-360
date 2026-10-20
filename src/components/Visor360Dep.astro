@@ -53,6 +53,8 @@ const { dep, config } = Astro.props;
   // Función para asignar ícono según el tipo/ID de escena
   const obtenerIcono = (sceneId) => {
     if (sceneId.includes('bano')) return '🚿';
+    if (sceneId.includes('closet')) return '👔';
+    if (sceneId === 'cuarto3') return '🎬';
     if (sceneId.includes('cuarto')) return '🛏️';
     return '🏠';
   };
