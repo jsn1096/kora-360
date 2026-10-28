@@ -1,0 +1,169 @@
+---
+const locales = {
+  local101: {
+    label: "Local 101",
+    panorama: "/renders/101-360.webp",
+  },
+  local102: {
+    label: "Local 102",
+    panorama: "/renders/102-360.webp",
+  },
+  local203: {
+    label: "Local 203",
+    panorama: "/renders/203-360.webp",
+  },
+};
+---
+
+<div id="panorama-wrapper">
+  <nav class="locales-nav" aria-label="Seleccionar local">
+    <div class="locales-tabs" role="tablist" aria-label="Locales disponibles">
+      {Object.entries(locales).map(([id, local], index) => (
+        <button
+          type="button"
+          class:list={["local-tab", index === 0 && "activo"]}
+          id={`tab-${id}`}
+          role="tab"
+          aria-selected={index === 0 ? "true" : "false"}
+          aria-controls="panorama"
+          data-local={id}
+        >
+          {local.label}
+        </button>
+      ))}
+    </div>
+  </nav>
+
+  <div id="panorama" aria-label="Visor 360 de locales"></div>
+</div>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #2c2c2c;
+  }
+
+  #panorama-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #2c2c2c;
+  }
+
+  #panorama {
+    width: 100%;
+    height: 100%;
+  }
+
+  .locales-nav {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    z-index: 200;
+    width: min(calc(100% - 32px), 430px);
+    transform: translateX(-50%);
+  }
+
+  .locales-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(12px);
+  }
+
+  .local-tab {
+    min-width: 0;
+    padding: 10px 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.78);
+    font: 600 13px system-ui, -apple-system, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .local-tab:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  .local-tab.activo {
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a1a1a;
+  }
+
+  .pnlm-load-box {
+    display: none !important;
+  }
+
+  @media (max-width: 420px) {
+    .local-tab {
+      padding-inline: 5px;
+      font-size: 12px;
+    }
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<script define:vars={{ locales }}>
+  let visor = null;
+
+  const actualizarTab = (localId) => {
+    document.querySelectorAll(".local-tab").forEach((tab) => {
+      const activo = tab.dataset.local === localId;
+      tab.classList.toggle("activo", activo);
+      tab.setAttribute("aria-selected", String(activo));
+    });
+  };
+
+  const iniciarVisor = () => {
+    if (typeof pannellum === "undefined") {
+      window.setTimeout(iniciarVisor, 50);
+      return;
+    }
+
+    visor = pannellum.viewer("panorama", {
+      default: {
+        firstScene: "local101",
+        sceneFadeDuration: 700,
+        autoLoad: true,
+        showControls: true,
+        autoRotate: 0,
+      },
+      scenes: Object.fromEntries(
+        Object.entries(locales).map(([id, local]) => [id, {
+          type: "equirectangular",
+          panorama: local.panorama,
+          hotSpots: [],
+        }]),
+      ),
+    });
+
+    document.querySelectorAll(".local-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const localId = tab.dataset.local;
+        if (!localId || !visor) return;
+        visor.loadScene(localId);
+        actualizarTab(localId);
+      });
+    });
+
+    visor.on("scenechange", actualizarTab);
+  };
+
+  iniciarVisor();
+</script>

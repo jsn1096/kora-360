@@ -9,11 +9,17 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
     "astro": "^6.0.6",
-    "partykit": "^0.0.115",
+    "partyserver": "^0.5.10",
     "partysocket": "^1.1.18"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261023.1",
+    "wrangler": "^4.152.0"
   }
 }

@@ -1,17 +1,22 @@
-// party/index.ts
-import type * as Party from "partykit/server";
+/// <reference types="@cloudflare/workers-types" />
 
-export default class ControlRoom implements Party.Server {
+import { routePartykitRequest, Server } from "partyserver";
+import type { Connection, WSMessage } from "partyserver";
+
+type Env = {
+  Main: DurableObjectNamespace<ControlRoom>;
+};
+
+export class ControlRoom extends Server<Env> {
   estadoActual = JSON.stringify({
     type: "cambiar-escena",
     escena: "entrada1",
     seccion: "areas-sociales",
   });
 
-  constructor(readonly room: Party.Room) {}
+  onMessage(_sender: Connection, message: WSMessage) {
+    if (typeof message !== "string") return;
 
-  // Cuando alguien manda un mensaje (el controlador)
-  onMessage(message: string, sender: Party.Connection) {
     let data: { type?: string };
 
     try {
@@ -20,17 +25,23 @@ export default class ControlRoom implements Party.Server {
       return;
     }
 
-    // Guardar el último estado para que un visor recién conectado se sincronice.
     if (data.type === "cambiar-escena" || data.type === "cambiar-video") {
       this.estadoActual = message;
     }
 
-    // Retransmitir a TODOS (incluyendo la Vista)
-    this.room.broadcast(message);
+    this.broadcast(message);
   }
 
-  // Cuando la Vista se conecta, enviarle el estado actual
-  onConnect(conn: Party.Connection) {
-    conn.send(this.estadoActual);
+  onConnect(connection: Connection) {
+    connection.send(this.estadoActual);
   }
 }
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    return (
+      (await routePartykitRequest(request, env)) ||
+      new Response("Not Found", { status: 404 })
+    );
+  },
+} satisfies ExportedHandler<Env>;
