@@ -8,6 +8,10 @@ const locales = {
     label: "Local 102",
     panorama: "/renders/102-360.webp",
   },
+  local102plus: {
+    label: "Local 102 +",
+    panorama: "/renders/102-360-lleno.webp",
+  },
   local203: {
     label: "Local 203",
     panorama: "/renders/203-360.webp",
@@ -17,6 +21,24 @@ const locales = {
 
 <div id="panorama-wrapper">
   <nav class="locales-nav" aria-label="Seleccionar local">
+    <button
+      type="button"
+      class="locales-trigger"
+      aria-expanded="false"
+      aria-controls="locales-dropdown"
+    >
+      <span class="locales-trigger-label">Local 101</span>
+      <span class="locales-trigger-chevron" aria-hidden="true">▼</span>
+    </button>
+
+    <div id="locales-dropdown" class="locales-dropdown" role="menu">
+      {Object.entries(locales).map(([id, local]) => (
+        <button type="button" class="local-dropdown-option" role="menuitem" data-local={id}>
+          {local.label}
+        </button>
+      ))}
+    </div>
+
     <div class="locales-tabs" role="tablist" aria-label="Locales disponibles">
       {Object.entries(locales).map(([id, local], index) => (
         <button
@@ -79,6 +101,11 @@ const locales = {
     backdrop-filter: blur(12px);
   }
 
+  .locales-trigger,
+  .locales-dropdown {
+    display: none;
+  }
+
   .local-tab {
     min-width: 0;
     padding: 10px 8px;
@@ -108,7 +135,73 @@ const locales = {
     display: none !important;
   }
 
-  @media (max-width: 420px) {
+  @media (max-width: 600px) {
+    .locales-tabs {
+      display: none;
+    }
+
+    .locales-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.68);
+      color: #fff;
+      font: 600 13px system-ui, -apple-system, sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+    }
+
+    .locales-trigger-chevron {
+      margin-left: 8px;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .locales-trigger.abierto .locales-trigger-chevron {
+      transform: rotate(180deg);
+    }
+
+    .locales-dropdown {
+      flex-direction: column;
+      gap: 0;
+      margin-top: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      background: rgba(18, 18, 18, 0.95);
+      backdrop-filter: blur(12px);
+    }
+
+    .locales-dropdown.abierto {
+      display: flex;
+    }
+
+    .local-dropdown-option {
+      padding: 11px 16px;
+      border: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.82);
+      font: 13px system-ui, -apple-system, sans-serif;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .local-dropdown-option:last-child {
+      border-bottom: 0;
+    }
+
+    .local-dropdown-option:hover,
+    .local-dropdown-option.activo {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
     .local-tab {
       padding-inline: 5px;
       font-size: 12px;
@@ -123,11 +216,28 @@ const locales = {
   let visor = null;
 
   const actualizarTab = (localId) => {
+    const local = locales[localId];
+
     document.querySelectorAll(".local-tab").forEach((tab) => {
       const activo = tab.dataset.local === localId;
       tab.classList.toggle("activo", activo);
       tab.setAttribute("aria-selected", String(activo));
     });
+
+    document.querySelectorAll(".local-dropdown-option").forEach((option) => {
+      option.classList.toggle("activo", option.dataset.local === localId);
+    });
+
+    const triggerLabel = document.querySelector(".locales-trigger-label");
+    if (triggerLabel && local) triggerLabel.textContent = local.label;
+  };
+
+  const cerrarDropdown = () => {
+    const trigger = document.querySelector(".locales-trigger");
+    const dropdown = document.querySelector(".locales-dropdown");
+    trigger?.classList.remove("abierto");
+    trigger?.setAttribute("aria-expanded", "false");
+    dropdown?.classList.remove("abierto");
   };
 
   const iniciarVisor = () => {
@@ -161,6 +271,29 @@ const locales = {
         actualizarTab(localId);
       });
     });
+
+    document.querySelectorAll(".local-dropdown-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        const localId = option.dataset.local;
+        if (!localId || !visor) return;
+        visor.loadScene(localId);
+        actualizarTab(localId);
+        cerrarDropdown();
+      });
+    });
+
+    const trigger = document.querySelector(".locales-trigger");
+    const dropdown = document.querySelector(".locales-dropdown");
+
+    trigger?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const abierto = dropdown?.classList.toggle("abierto") ?? false;
+      trigger.classList.toggle("abierto", abierto);
+      trigger.setAttribute("aria-expanded", String(abierto));
+    });
+
+    dropdown?.addEventListener("click", (event) => event.stopPropagation());
+    document.addEventListener("click", cerrarDropdown);
 
     visor.on("scenechange", actualizarTab);
   };
