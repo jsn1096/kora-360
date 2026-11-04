@@ -1,0 +1,56 @@
+---
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import Layout from "../../layouts/Layout.astro";
+import VisorLocal from "../../components/VisorLocal.astro";
+
+export function getStaticPaths() {
+  const renderOcupado = (numero) => {
+    const nombre = `${numero}-360-lleno.webp`;
+    return existsSync(resolve(process.cwd(), "public", "renders", nombre))
+      ? `/renders/${nombre}`
+      : undefined;
+  };
+
+  return [
+    {
+      params: { slug: "101" },
+      props: {
+        local: {
+          numero: "101",
+          vacio: "/renders/101-360.webp",
+          ocupado: renderOcupado("101"),
+        },
+      },
+    },
+    {
+      params: { slug: "102" },
+      props: {
+        local: {
+          numero: "102",
+          vacio: "/renders/102-360.webp",
+          ocupado: renderOcupado("102"),
+        },
+      },
+    },
+    {
+      params: { slug: "203" },
+      props: {
+        local: {
+          numero: "203",
+          vacio: "/renders/203-360.webp",
+          ocupado: renderOcupado("203"),
+        },
+      },
+    },
+  ];
+}
+
+const { local } = Astro.props;
+---
+
+<Layout title={`Local ${local.numero} · Kora 360`}>
+  <main>
+    <VisorLocal local={local} />
+  </main>
+</Layout>

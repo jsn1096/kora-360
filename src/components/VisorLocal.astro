@@ -1,0 +1,298 @@
+---
+const { local } = Astro.props;
+const vistas = {
+  vacio: {
+    label: `Local ${local.numero}`,
+    panorama: local.vacio,
+  },
+  ...(local.ocupado
+    ? {
+        ocupado: {
+          label: "Alternativa ocupación",
+          panorama: local.ocupado,
+        },
+      }
+    : {}),
+};
+---
+
+<div id="panorama-wrapper">
+  <nav
+    class:list={["visor-nav", Object.keys(vistas).length === 1 && "una-vista"]}
+    aria-label={`Vistas del Local ${local.numero}`}
+  >
+    <button
+      type="button"
+      class="visor-trigger"
+      aria-expanded="false"
+      aria-controls="visor-dropdown"
+    >
+      <span class="visor-trigger-label">{vistas.vacio.label}</span>
+      <span class="visor-trigger-chevron" aria-hidden="true">▼</span>
+    </button>
+
+    <div id="visor-dropdown" class="visor-dropdown" role="menu">
+      {Object.entries(vistas).map(([id, vista]) => (
+        <button type="button" class="visor-dropdown-option" role="menuitem" data-vista={id}>
+          {vista.label}
+        </button>
+      ))}
+    </div>
+
+    <div
+      class:list={["visor-tabs", Object.keys(vistas).length === 1 && "una-vista"]}
+      role="tablist"
+      aria-label="Seleccionar vista"
+    >
+      {Object.entries(vistas).map(([id, vista], index) => (
+        <button
+          type="button"
+          class:list={["visor-tab", index === 0 && "activo"]}
+          role="tab"
+          aria-selected={index === 0 ? "true" : "false"}
+          aria-controls="panorama"
+          data-vista={id}
+        >
+          {vista.label}
+        </button>
+      ))}
+    </div>
+  </nav>
+
+  <div id="panorama" aria-label={`Visor 360 del Local ${local.numero}`}></div>
+</div>
+
+<style is:global>
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #2c2c2c;
+  }
+
+  #panorama-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #2c2c2c;
+  }
+
+  #panorama {
+    width: 100%;
+    height: 100%;
+  }
+
+  .visor-nav {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    z-index: 200;
+    width: min(calc(100% - 32px), 280px);
+    transform: translateX(-50%);
+  }
+
+  .visor-tabs {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(12px);
+  }
+
+  .visor-nav.una-vista {
+    width: min(calc(100% - 32px), 150px);
+  }
+
+  .visor-tabs.una-vista {
+    grid-template-columns: 1fr;
+  }
+
+  .visor-trigger,
+  .visor-dropdown {
+    display: none;
+  }
+
+  .visor-tab {
+    min-width: 0;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.78);
+    font: 600 13px system-ui, -apple-system, sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .visor-tab:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  .visor-tab.activo {
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a1a1a;
+  }
+
+  .pnlm-load-box,
+  .pnlm-tooltip {
+    display: none !important;
+  }
+
+  @media (max-width: 600px) {
+    .visor-tabs {
+      display: none;
+    }
+
+    .visor-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.68);
+      color: #fff;
+      font: 600 13px system-ui, -apple-system, sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+    }
+
+    .visor-trigger-chevron {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .visor-trigger.abierto .visor-trigger-chevron {
+      transform: rotate(180deg);
+    }
+
+    .visor-dropdown {
+      flex-direction: column;
+      gap: 0;
+      margin-top: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      background: rgba(18, 18, 18, 0.95);
+      backdrop-filter: blur(12px);
+    }
+
+    .visor-dropdown.abierto {
+      display: flex;
+    }
+
+    .visor-dropdown-option {
+      padding: 11px 16px;
+      border: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.82);
+      font: 13px system-ui, -apple-system, sans-serif;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .visor-dropdown-option:last-child {
+      border-bottom: 0;
+    }
+
+    .visor-dropdown-option:hover,
+    .visor-dropdown-option.activo {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+<script is:inline src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<script define:vars={{ vistas }}>
+  let visor = null;
+
+  const actualizarVista = (vistaId) => {
+    const vista = vistas[vistaId];
+
+    document.querySelectorAll(".visor-tab").forEach((tab) => {
+      const activo = tab.dataset.vista === vistaId;
+      tab.classList.toggle("activo", activo);
+      tab.setAttribute("aria-selected", String(activo));
+    });
+
+    document.querySelectorAll(".visor-dropdown-option").forEach((option) => {
+      option.classList.toggle("activo", option.dataset.vista === vistaId);
+    });
+
+    const triggerLabel = document.querySelector(".visor-trigger-label");
+    if (triggerLabel && vista) triggerLabel.textContent = vista.label;
+  };
+
+  const cerrarDropdown = () => {
+    const trigger = document.querySelector(".visor-trigger");
+    const dropdown = document.querySelector(".visor-dropdown");
+    trigger?.classList.remove("abierto");
+    trigger?.setAttribute("aria-expanded", "false");
+    dropdown?.classList.remove("abierto");
+  };
+
+  const iniciarVisor = () => {
+    if (typeof pannellum === "undefined") {
+      window.setTimeout(iniciarVisor, 50);
+      return;
+    }
+
+    visor = pannellum.viewer("panorama", {
+      default: {
+        firstScene: "vacio",
+        sceneFadeDuration: 700,
+        autoLoad: true,
+        showControls: true,
+        autoRotate: 0,
+      },
+      scenes: Object.fromEntries(
+        Object.entries(vistas).map(([id, vista]) => [id, {
+          type: "equirectangular",
+          panorama: vista.panorama,
+          hotSpots: [],
+        }]),
+      ),
+    });
+
+    const cambiarVista = (elemento) => {
+      const vistaId = elemento.dataset.vista;
+      if (!vistaId || !visor) return;
+      visor.loadScene(vistaId);
+      actualizarVista(vistaId);
+      cerrarDropdown();
+    };
+
+    document.querySelectorAll(".visor-tab, .visor-dropdown-option").forEach((elemento) => {
+      elemento.addEventListener("click", () => cambiarVista(elemento));
+    });
+
+    const trigger = document.querySelector(".visor-trigger");
+    const dropdown = document.querySelector(".visor-dropdown");
+
+    trigger?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const abierto = dropdown?.classList.toggle("abierto") ?? false;
+      trigger.classList.toggle("abierto", abierto);
+      trigger.setAttribute("aria-expanded", String(abierto));
+    });
+
+    dropdown?.addEventListener("click", (event) => event.stopPropagation());
+    document.addEventListener("click", cerrarDropdown);
+    visor.on("scenechange", actualizarVista);
+    actualizarVista("vacio");
+  };
+
+  iniciarVisor();
+</script>
